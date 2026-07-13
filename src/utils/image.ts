@@ -2,13 +2,8 @@
  * Reads an image file, downsizes it to fit within maxDim on its longest
  * side, and returns the base64-encoded JPEG payload (without the data URL
  * prefix) ready to send to the Claude API.
- *
- * @param {File} file
- * @param {number} [maxDim=900]
- * @param {number} [quality=0.72]
- * @returns {Promise<string>}
  */
-export function fileToResizedBase64(file, maxDim = 900, quality = 0.72) {
+export function fileToResizedBase64(file: File, maxDim = 900, quality = 0.72): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error("Не удалось прочитать файл"));
@@ -27,11 +22,11 @@ export function fileToResizedBase64(file, maxDim = 900, quality = 0.72) {
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;
-        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
         const dataUrl = canvas.toDataURL("image/jpeg", quality);
         resolve(dataUrl.split(",")[1]);
       };
-      img.src = reader.result;
+      img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
   });

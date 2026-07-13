@@ -1,10 +1,12 @@
-import { Digits } from "./Digits.jsx";
+import { Digits } from "./Digits.tsx";
 import styles from "./ScaleReadout.module.css";
 
-/**
- * @param {{ total: number, goal: number }} props
- */
-export function ScaleReadout({ total, goal }) {
+interface ScaleReadoutProps {
+  total: number;
+  goal: number;
+}
+
+export function ScaleReadout({ total, goal }: ScaleReadoutProps) {
   const pct = Math.min(100, Math.round((total / goal) * 100));
   const over = total > goal;
 

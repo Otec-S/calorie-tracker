@@ -1,10 +1,12 @@
 import { X } from "lucide-react";
 import styles from "./ErrorBanner.module.css";
 
-/**
- * @param {{ message: string, onDismiss: () => void }} props
- */
-export function ErrorBanner({ message, onDismiss }) {
+interface ErrorBannerProps {
+  message: string;
+  onDismiss: () => void;
+}
+
+export function ErrorBanner({ message, onDismiss }: ErrorBannerProps) {
   return (
     <div className={styles.banner}>
       <span className={styles.message}>{message}</span>

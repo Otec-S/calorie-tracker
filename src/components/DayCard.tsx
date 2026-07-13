@@ -1,21 +1,19 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { EntryRow } from "./EntryRow.jsx";
-import { fmtDate } from "../utils/date.js";
+import { EntryRow } from "./EntryRow.tsx";
+import { fmtDate } from "../utils/date.ts";
 import styles from "./DayCard.module.css";
+import type { Entry } from "../types.ts";
 
-/** @typedef {import("../types.js").Entry} Entry */
+interface DayCardProps {
+  dateKey: string;
+  entries: Entry[];
+  isToday: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+  onDelete: (dateKey: string, entryId: string) => void;
+}
 
-/**
- * @param {{
- *   dateKey: string,
- *   entries: Entry[],
- *   isToday: boolean,
- *   expanded: boolean,
- *   onToggle: () => void,
- *   onDelete: (dateKey: string, entryId: string) => void,
- * }} props
- */
-export function DayCard({ dateKey, entries, isToday, expanded, onToggle, onDelete }) {
+export function DayCard({ dateKey, entries, isToday, expanded, onToggle, onDelete }: DayCardProps) {
   const total = entries.reduce((s, e) => s + (e.cal_max || e.cal_min || 0), 0);
 
   return (

@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { AppHeader } from "./components/AppHeader.jsx";
-import { GoalEditor } from "./components/GoalEditor.jsx";
-import { ScaleReadout } from "./components/ScaleReadout.jsx";
-import { SeedImportButton } from "./components/SeedImportButton.jsx";
-import { AddEntryControls } from "./components/AddEntryControls.jsx";
-import { AnalyzingPreview } from "./components/AnalyzingPreview.jsx";
-import { ErrorBanner } from "./components/ErrorBanner.jsx";
-import { EntryHistory } from "./components/EntryHistory.jsx";
-import { useEntries } from "./hooks/useEntries.js";
-import { useGoal } from "./hooks/useGoal.js";
-import { analyzeWithClaude } from "./api/claude.js";
-import { fileToResizedBase64 } from "./utils/image.js";
-import { CHAT_SEED_ENTRIES } from "./data/seedEntries.js";
+import { AppHeader } from "./components/AppHeader.tsx";
+import { GoalEditor } from "./components/GoalEditor.tsx";
+import { ScaleReadout } from "./components/ScaleReadout.tsx";
+import { SeedImportButton } from "./components/SeedImportButton.tsx";
+import { AddEntryControls } from "./components/AddEntryControls.tsx";
+import { AnalyzingPreview } from "./components/AnalyzingPreview.tsx";
+import { ErrorBanner } from "./components/ErrorBanner.tsx";
+import { EntryHistory } from "./components/EntryHistory.tsx";
+import { useEntries } from "./hooks/useEntries.ts";
+import { useGoal } from "./hooks/useGoal.ts";
+import { analyzeWithClaude } from "./api/claude.ts";
+import { fileToResizedBase64 } from "./utils/image.ts";
+import { CHAT_SEED_ENTRIES } from "./data/seedEntries.ts";
+import type { Status } from "./types.ts";
 import styles from "./App.module.css";
 
 export default function App() {
@@ -28,13 +29,13 @@ export default function App() {
   } = useEntries();
   const { goal, editingGoal, setEditingGoal, handleGoalSave } = useGoal();
 
-  const [status, setStatus] = useState("idle"); // idle | analyzing | error
+  const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [pendingPreview, setPendingPreview] = useState(null);
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
 
   const alreadyImportedSeed = todaysEntries.some((e) => e.id?.includes("-seed-"));
 
-  async function handlePhotoSelected(file) {
+  async function handlePhotoSelected(file: File) {
     setStatus("analyzing");
     setErrorMsg("");
     try {
@@ -46,13 +47,13 @@ export default function App() {
       setPendingPreview(null);
     } catch (err) {
       console.error(err);
-      setErrorMsg(err.message || "Не получилось распознать фото");
+      setErrorMsg(err instanceof Error ? err.message : "Не получилось распознать фото");
       setStatus("error");
       setPendingPreview(null);
     }
   }
 
-  async function handleTextSubmit(text) {
+  async function handleTextSubmit(text: string) {
     setStatus("analyzing");
     setErrorMsg("");
     try {
@@ -61,7 +62,7 @@ export default function App() {
       setStatus("idle");
     } catch (err) {
       console.error(err);
-      setErrorMsg(err.message || "Не получилось оценить блюдо");
+      setErrorMsg(err instanceof Error ? err.message : "Не получилось оценить блюдо");
       setStatus("error");
     }
   }

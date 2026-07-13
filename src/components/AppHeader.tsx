@@ -1,10 +1,11 @@
 import { Settings2 } from "lucide-react";
 import styles from "./AppHeader.module.css";
 
-/**
- * @param {{ onToggleGoalEditor: () => void }} props
- */
-export function AppHeader({ onToggleGoalEditor }) {
+interface AppHeaderProps {
+  onToggleGoalEditor: () => void;
+}
+
+export function AppHeader({ onToggleGoalEditor }: AppHeaderProps) {
   return (
     <div className={styles.header}>
       <div>

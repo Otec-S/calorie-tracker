@@ -1,10 +1,11 @@
 import { Loader2 } from "lucide-react";
 import styles from "./AnalyzingPreview.module.css";
 
-/**
- * @param {{ previewSrc: string }} props
- */
-export function AnalyzingPreview({ previewSrc }) {
+interface AnalyzingPreviewProps {
+  previewSrc: string;
+}
+
+export function AnalyzingPreview({ previewSrc }: AnalyzingPreviewProps) {
   return (
     <div className={styles.wrapper}>
       <img src={previewSrc} alt="" className={styles.thumb} />

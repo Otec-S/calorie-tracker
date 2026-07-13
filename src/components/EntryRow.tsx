@@ -1,12 +1,13 @@
 import { Trash2 } from "lucide-react";
 import styles from "./EntryRow.module.css";
+import type { Entry } from "../types.ts";
 
-/** @typedef {import("../types.js").Entry} Entry */
+interface EntryRowProps {
+  entry: Entry;
+  onDelete: (id: string) => void;
+}
 
-/**
- * @param {{ entry: Entry, onDelete: (id: string) => void }} props
- */
-export function EntryRow({ entry, onDelete }) {
+export function EntryRow({ entry, onDelete }: EntryRowProps) {
   return (
     <div className={styles.row}>
       <div className={styles.body}>

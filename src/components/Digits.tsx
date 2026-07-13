@@ -1,5 +1,9 @@
 import styles from "./Digits.module.css";
 
-export function Digits({ value }) {
+interface DigitsProps {
+  value: number;
+}
+
+export function Digits({ value }: DigitsProps) {
   return <span className={styles.digits}>{value}</span>;
 }

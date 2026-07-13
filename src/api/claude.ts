@@ -1,6 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-
-/** @typedef {import("../types.js").FoodAnalysis} FoodAnalysis */
+import type { FoodAnalysis } from "../types.ts";
 
 const anthropic = new Anthropic({
   apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
@@ -23,15 +22,17 @@ const SYSTEM_PROMPT = `Ты — нутрициолог-аналитик. По ф
 Если на фото нет еды или её невозможно определить — верни title: "Не удалось распознать" и cal_min/cal_max: 0.
 Числа — целые, без единиц измерения внутри числовых полей.`;
 
+interface AnalyzeInput {
+  base64?: string;
+  text?: string;
+}
+
 /**
  * Sends a food photo and/or text description to Claude and returns the
  * parsed calorie/macro analysis.
- *
- * @param {{ base64?: string, text?: string }} input
- * @returns {Promise<FoodAnalysis>}
  */
-export async function analyzeWithClaude({ base64, text }) {
-  const content = [];
+export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise<FoodAnalysis> {
+  const content: Anthropic.ContentBlockParam[] = [];
   if (base64) {
     content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } });
   }
@@ -49,8 +50,8 @@ export async function analyzeWithClaude({ base64, text }) {
     messages: [{ role: "user", content }],
   });
 
-  const textBlock = response.content.find((b) => b.type === "text");
+  const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === "text");
   if (!textBlock) throw new Error("Пустой ответ от модели");
   const cleaned = textBlock.text.replace(/```json|```/g, "").trim();
-  return JSON.parse(cleaned);
+  return JSON.parse(cleaned) as FoodAnalysis;
 }

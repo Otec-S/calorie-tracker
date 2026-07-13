@@ -1,10 +1,11 @@
 import { Import } from "lucide-react";
 import styles from "./SeedImportButton.module.css";
 
-/**
- * @param {{ onImport: () => void }} props
- */
-export function SeedImportButton({ onImport }) {
+interface SeedImportButtonProps {
+  onImport: () => void;
+}
+
+export function SeedImportButton({ onImport }: SeedImportButtonProps) {
   return (
     <button onClick={onImport} className={styles.button}>
       <Import size={16} />

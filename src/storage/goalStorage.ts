@@ -1,8 +1,7 @@
 const KEY = "calorie-tracker:settings:goal";
 const DEFAULT_GOAL = 2300;
 
-/** @returns {number} */
-export function loadGoal() {
+export function loadGoal(): number {
   try {
     const raw = localStorage.getItem(KEY);
     return raw ? JSON.parse(raw) : DEFAULT_GOAL;
@@ -11,8 +10,7 @@ export function loadGoal() {
   }
 }
 
-/** @param {number} goal */
-export function saveGoal(goal) {
+export function saveGoal(goal: number): void {
   try {
     localStorage.setItem(KEY, JSON.stringify(goal));
   } catch (e) {

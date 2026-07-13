@@ -1,12 +1,8 @@
-/** @typedef {import("../types.js").Entry} Entry */
+import type { Entry } from "../types.ts";
 
 const KEY_PREFIX = "calorie-tracker:entries:";
 
-/**
- * @param {string} dateKey
- * @returns {Entry[]}
- */
-export function loadDay(dateKey) {
+export function loadDay(dateKey: string): Entry[] {
   try {
     const raw = localStorage.getItem(KEY_PREFIX + dateKey);
     return raw ? JSON.parse(raw) : [];
@@ -15,11 +11,7 @@ export function loadDay(dateKey) {
   }
 }
 
-/**
- * @param {string} dateKey
- * @param {Entry[]} entries
- */
-export function saveDay(dateKey, entries) {
+export function saveDay(dateKey: string, entries: Entry[]): void {
   try {
     localStorage.setItem(KEY_PREFIX + dateKey, JSON.stringify(entries));
   } catch (e) {
@@ -27,10 +19,10 @@ export function saveDay(dateKey, entries) {
   }
 }
 
-/** @returns {string[]} date keys, newest first */
-export function loadAllDayKeys() {
+/** @returns date keys, newest first */
+export function loadAllDayKeys(): string[] {
   try {
-    const keys = [];
+    const keys: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
       if (k?.startsWith(KEY_PREFIX)) keys.push(k.slice(KEY_PREFIX.length));

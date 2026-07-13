@@ -1,21 +1,21 @@
 import { useRef, useState } from "react";
 import { Camera, Loader2, Plus, Type } from "lucide-react";
 import styles from "./AddEntryControls.module.css";
+import type { Status } from "../types.ts";
 
-/**
- * @param {{
- *   status: "idle" | "analyzing" | "error",
- *   onPhotoSelected: (file: File) => void,
- *   onTextSubmit: (text: string) => void,
- * }} props
- */
-export function AddEntryControls({ status, onPhotoSelected, onTextSubmit }) {
+interface AddEntryControlsProps {
+  status: Status;
+  onPhotoSelected: (file: File) => void;
+  onTextSubmit: (text: string) => void;
+}
+
+export function AddEntryControls({ status, onPhotoSelected, onTextSubmit }: AddEntryControlsProps) {
   const [showTextInput, setShowTextInput] = useState(false);
   const [textDesc, setTextDesc] = useState("");
-  const fileInputRef = useRef(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const isAnalyzing = status === "analyzing";
 
-  function handleFileChange(e) {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (file) onPhotoSelected(file);

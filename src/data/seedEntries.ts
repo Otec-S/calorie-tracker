@@ -1,7 +1,6 @@
-/** @typedef {import("../types.js").FoodAnalysis} FoodAnalysis */
+import type { FoodAnalysis } from "../types.ts";
 
-/** @type {FoodAnalysis[]} */
-export const CHAT_SEED_ENTRIES = [
+export const CHAT_SEED_ENTRIES: FoodAnalysis[] = [
   {
     title: "Капучино",
     items: "эспрессо, молоко, молочная пена",

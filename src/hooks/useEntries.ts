@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { loadAllDayKeys, loadDay, saveDay } from "../storage/entriesStorage.js";
-import { todayKey } from "../utils/date.js";
+import { loadAllDayKeys, loadDay, saveDay } from "../storage/entriesStorage.ts";
+import { todayKey } from "../utils/date.ts";
+import type { Entry, FoodAnalysis } from "../types.ts";
 
-/** @typedef {import("../types.js").Entry} Entry */
-/** @typedef {import("../types.js").FoodAnalysis} FoodAnalysis */
+type DaysMap = Record<string, Entry[]>;
 
-function persistDay(days, dateKey, entries) {
+function persistDay(days: DaysMap, dateKey: string, entries: Entry[]): DaysMap {
   saveDay(dateKey, entries);
   return { ...days, [dateKey]: entries };
 }
 
-function withDayInOrder(order, dateKey) {
+function withDayInOrder(order: string[], dateKey: string): string[] {
   return order.includes(dateKey) ? order : [dateKey, ...order];
 }
 
@@ -19,16 +19,15 @@ function withDayInOrder(order, dateKey) {
  * entries for today, and tracking which day cards are expanded.
  */
 export function useEntries() {
-  /** @type {[Record<string, Entry[]>, Function]} */
-  const [days, setDays] = useState({});
-  const [dayOrder, setDayOrder] = useState([]);
-  const [expandedDays, setExpandedDays] = useState({ [todayKey()]: true });
+  const [days, setDays] = useState<DaysMap>({});
+  const [dayOrder, setDayOrder] = useState<string[]>([]);
+  const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({ [todayKey()]: true });
 
   const refreshAll = useCallback(() => {
     const keys = loadAllDayKeys();
     const tKey = todayKey();
     const allKeys = keys.includes(tKey) ? keys : [tKey, ...keys];
-    const entries = {};
+    const entries: DaysMap = {};
     for (const k of allKeys) entries[k] = loadDay(k);
     setDays(entries);
     setDayOrder(allKeys);
@@ -38,11 +37,9 @@ export function useEntries() {
     refreshAll();
   }, [refreshAll]);
 
-  /** @param {FoodAnalysis} analysis */
-  const commitEntry = useCallback((analysis) => {
+  const commitEntry = useCallback((analysis: FoodAnalysis) => {
     const tKey = todayKey();
-    /** @type {Entry} */
-    const entry = {
+    const entry: Entry = {
       id: Date.now() + "-" + Math.random().toString(36).slice(2, 7),
       time: new Date().toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" }),
       ...analysis,
@@ -52,9 +49,9 @@ export function useEntries() {
     setExpandedDays((e) => ({ ...e, [tKey]: true }));
   }, []);
 
-  const importSeedEntries = useCallback((seedEntries) => {
+  const importSeedEntries = useCallback((seedEntries: FoodAnalysis[]) => {
     const tKey = todayKey();
-    const stamped = seedEntries.map((s, i) => ({
+    const stamped: Entry[] = seedEntries.map((s, i) => ({
       id: Date.now() + "-seed-" + i,
       time: "—",
       ...s,
@@ -64,11 +61,11 @@ export function useEntries() {
     setExpandedDays((e) => ({ ...e, [tKey]: true }));
   }, []);
 
-  const deleteEntry = useCallback((dateKey, entryId) => {
+  const deleteEntry = useCallback((dateKey: string, entryId: string) => {
     setDays((d) => persistDay(d, dateKey, (d[dateKey] || []).filter((e) => e.id !== entryId)));
   }, []);
 
-  const toggleDay = useCallback((dateKey) => {
+  const toggleDay = useCallback((dateKey: string) => {
     setExpandedDays((e) => ({ ...e, [dateKey]: !e[dateKey] }));
   }, []);
 
