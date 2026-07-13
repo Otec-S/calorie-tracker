@@ -44,7 +44,7 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
   });
 
   const response = await anthropic.messages.create({
-    model: "claude-opus-4-8",
+    model: "claude-sonnet-5",
     max_tokens: 1000,
     system: SYSTEM_PROMPT,
     messages: [{ role: "user", content }],
