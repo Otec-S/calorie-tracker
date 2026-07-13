@@ -1,0 +1,24 @@
+.page {
+  background: var(--color-bg);
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  padding: 22px 16px 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.content {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.footer {
+  text-align: center;
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  color: var(--color-muted-ink);
+  margin-top: 8px;
+}

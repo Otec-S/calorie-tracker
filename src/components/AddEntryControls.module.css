@@ -1,0 +1,78 @@
+.row {
+  display: flex;
+  gap: 10px;
+}
+
+.photoButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--color-paprika);
+  color: var(--color-cream);
+  border: none;
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.photoButton:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.textToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: none;
+  color: var(--color-sage);
+  border: 1px solid var(--color-sage-deep);
+  border-radius: 10px;
+  padding: 13px 14px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.textRow {
+  background: var(--color-card);
+  border-radius: 10px;
+  border: 1px solid var(--color-card-line);
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.textInput {
+  flex: 1;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-card-line);
+  border-radius: 6px;
+  color: var(--color-cream);
+  padding: 8px 10px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: var(--color-paprika);
+}
+
+.submitButton {
+  background: var(--color-sage-deep);
+  border: none;
+  border-radius: 6px;
+  padding: 0 12px;
+  color: var(--color-cream);
+  cursor: pointer;
+}

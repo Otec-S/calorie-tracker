@@ -1,0 +1,22 @@
+.banner {
+  background: rgba(181, 80, 46, 0.13);
+  border: 1px solid var(--color-danger);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.message {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  color: var(--color-paprika-soft);
+}
+
+.dismissButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-paprika-soft);
+}
