@@ -1,7 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_ANTHROPIC_API_KEY: string
+  /** Base URL of the backend proxy; empty string means same-origin. */
+  readonly VITE_API_BASE_URL?: string
 }
 
 interface ImportMeta {
