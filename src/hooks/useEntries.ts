@@ -49,18 +49,6 @@ export function useEntries() {
     setExpandedDays((e) => ({ ...e, [tKey]: true }));
   }, []);
 
-  const importSeedEntries = useCallback((seedEntries: FoodAnalysis[]) => {
-    const tKey = todayKey();
-    const stamped: Entry[] = seedEntries.map((s, i) => ({
-      id: Date.now() + "-seed-" + i,
-      time: "—",
-      ...s,
-    }));
-    setDays((d) => persistDay(d, tKey, [...(d[tKey] || []), ...stamped]));
-    setDayOrder((order) => withDayInOrder(order, tKey));
-    setExpandedDays((e) => ({ ...e, [tKey]: true }));
-  }, []);
-
   const deleteEntry = useCallback((dateKey: string, entryId: string) => {
     setDays((d) => persistDay(d, dateKey, (d[dateKey] || []).filter((e) => e.id !== entryId)));
   }, []);
@@ -82,7 +70,6 @@ export function useEntries() {
     todaysEntries,
     todaysTotal,
     commitEntry,
-    importSeedEntries,
     deleteEntry,
     toggleDay,
   };
