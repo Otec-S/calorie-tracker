@@ -35,13 +35,13 @@ export default function App() {
 
   const alreadyImportedSeed = todaysEntries.some((e) => e.id?.includes("-seed-"));
 
-  async function handlePhotoSelected(file: File) {
+  async function handlePhotoSelected(file: File, description?: string) {
     setStatus("analyzing");
     setErrorMsg("");
     try {
       const base64 = await fileToResizedBase64(file);
       setPendingPreview(`data:image/jpeg;base64,${base64}`);
-      const analysis = await analyzeWithClaude({ base64 });
+      const analysis = await analyzeWithClaude({ base64, text: description });
       commitEntry(analysis);
       setStatus("idle");
       setPendingPreview(null);

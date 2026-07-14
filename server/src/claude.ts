@@ -36,9 +36,11 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
   }
   content.push({
     type: "text",
-    text: text
-      ? `Описание от пользователя: "${text}". Оцени калорийность этого блюда.`
-      : "Определи, что на фото, и оцени калорийность.",
+    text: base64
+      ? text
+        ? `Дополнительное описание от пользователя к фото: "${text}". Учти его при оценке калорийности.`
+        : "Определи, что на фото, и оцени калорийность."
+      : `Описание от пользователя: "${text}". Оцени калорийность этого блюда.`,
   });
 
   const response = await anthropic.messages.create({

@@ -75,4 +75,52 @@
   padding: 0 12px;
   color: var(--color-cream);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.submitButton:disabled,
+.cancelButton:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.pendingPhoto {
+  background: var(--color-card);
+  border-radius: 10px;
+  border: 1px solid var(--color-card-line);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pendingPhotoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pendingThumb {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.pendingPhotoActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancelButton {
+  background: none;
+  border: 1px solid var(--color-card-line);
+  border-radius: 6px;
+  padding: 0 12px;
+  color: var(--color-muted);
+  cursor: pointer;
 }
