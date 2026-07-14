@@ -23,7 +23,7 @@
 
 .label {
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--color-ink);
   text-transform: capitalize;
 }
@@ -36,7 +36,7 @@
 
 .total {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: var(--color-paprika);
 }
 
@@ -50,7 +50,7 @@
 
 .empty {
   font-family: var(--font-sans);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   color: var(--color-muted-ink);
   padding: 10px 0;
 }

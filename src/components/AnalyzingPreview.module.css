@@ -17,7 +17,7 @@
 
 .label {
   font-family: var(--font-sans);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   color: var(--color-muted);
   display: flex;
   align-items: center;

@@ -12,7 +12,7 @@ export function AppHeader({ onToggleGoalEditor }: AppHeaderProps) {
         <div className={styles.title}>Дневник калорий</div>
         <div className={styles.subtitle}>фото → оценка → журнал</div>
       </div>
-      <button onClick={onToggleGoalEditor} className={styles.settingsButton} title="Изменить дневную цель">
+      <button onClick={onToggleGoalEditor} className={styles.settingsButton} title="Настройки">
         <Settings2 size={16} className={styles.settingsIcon} />
       </button>
     </div>

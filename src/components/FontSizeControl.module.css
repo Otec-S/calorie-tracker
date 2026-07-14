@@ -2,6 +2,7 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  justify-content: space-between;
   background: var(--color-card);
   padding: 10px;
   border-radius: 10px;
@@ -9,21 +10,28 @@
 }
 
 .label {
+  font-family: var(--font-sans);
   font-size: 0.75rem;
   color: var(--color-muted);
 }
 
-.input {
+.buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.button {
   background: var(--color-bg-deep);
   border: 1px solid var(--color-card-line);
   border-radius: 6px;
   color: var(--color-cream);
-  padding: 4px 8px;
-  width: 90px;
-  font-family: var(--font-mono);
+  padding: 6px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
-.input:focus {
-  outline: none;
-  border-color: var(--color-paprika);
+.button:disabled {
+  cursor: default;
+  opacity: 0.5;
 }

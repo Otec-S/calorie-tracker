@@ -14,7 +14,6 @@ export function useGoal() {
     const n = Math.max(MIN_GOAL, Math.min(MAX_GOAL, parseInt(rawValue, 10) || DEFAULT_GOAL));
     setGoal(n);
     saveGoal(n);
-    setEditingGoal(false);
   }, []);
 
   return { goal, editingGoal, setEditingGoal, handleGoalSave };

@@ -19,27 +19,27 @@
 
 .title {
   font-family: var(--font-serif);
-  font-size: 16px;
+  font-size: 1rem;
   color: var(--color-ink);
 }
 
 .calories {
   font-family: var(--font-mono);
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--color-ink);
   white-space: nowrap;
 }
 
 .items {
   font-family: var(--font-sans);
-  font-size: 12.5px;
+  font-size: 0.78125rem;
   color: var(--color-muted-ink);
   margin-top: 2px;
 }
 
 .macros {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: 0.6875rem;
   color: var(--color-muted-ink);
   margin-top: 4px;
   display: flex;
@@ -52,7 +52,7 @@
 
 .note {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--color-sage-deep);
   margin-top: 4px;
   font-style: italic;

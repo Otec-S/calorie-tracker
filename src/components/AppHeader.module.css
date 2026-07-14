@@ -6,13 +6,13 @@
 
 .title {
   font-family: var(--font-serif);
-  font-size: 22px;
+  font-size: 1.375rem;
   color: var(--color-cream);
 }
 
 .subtitle {
   font-family: var(--font-sans);
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   color: var(--color-muted);
   margin-top: 2px;
 }

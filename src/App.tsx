@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AppHeader } from "./components/AppHeader.tsx";
 import { GoalEditor } from "./components/GoalEditor.tsx";
+import { FontSizeControl } from "./components/FontSizeControl.tsx";
 import { ScaleReadout } from "./components/ScaleReadout.tsx";
 import { AddEntryControls } from "./components/AddEntryControls.tsx";
 import { AnalyzingPreview } from "./components/AnalyzingPreview.tsx";
@@ -8,6 +9,7 @@ import { ErrorBanner } from "./components/ErrorBanner.tsx";
 import { EntryHistory } from "./components/EntryHistory.tsx";
 import { useEntries } from "./hooks/useEntries.ts";
 import { useGoal } from "./hooks/useGoal.ts";
+import { useFontSize } from "./hooks/useFontSize.ts";
 import { analyzeWithClaude } from "./api/claude.ts";
 import { fileToResizedBase64 } from "./utils/image.ts";
 import type { Status } from "./types.ts";
@@ -16,6 +18,7 @@ import styles from "./App.module.css";
 export default function App() {
   const { days, dayOrder, expandedDays, todaysTotal, commitEntry, deleteEntry, toggleDay } = useEntries();
   const { goal, editingGoal, setEditingGoal, handleGoalSave } = useGoal();
+  const { fontScale, canIncreaseFontSize, canDecreaseFontSize, increaseFontSize, decreaseFontSize } = useFontSize();
 
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -58,7 +61,18 @@ export default function App() {
       <div className={styles.content}>
         <AppHeader onToggleGoalEditor={() => setEditingGoal((v) => !v)} />
 
-        {editingGoal && <GoalEditor goal={goal} onSave={handleGoalSave} />}
+        {editingGoal && (
+          <>
+            <GoalEditor goal={goal} onSave={handleGoalSave} />
+            <FontSizeControl
+              scale={fontScale}
+              canIncrease={canIncreaseFontSize}
+              canDecrease={canDecreaseFontSize}
+              onIncrease={increaseFontSize}
+              onDecrease={decreaseFontSize}
+            />
+          </>
+        )}
 
         <ScaleReadout total={todaysTotal} goal={goal} />
 
