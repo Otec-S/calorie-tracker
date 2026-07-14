@@ -63,7 +63,11 @@ export function AddEntryControls({ status, onPhotoSelected, onTextSubmit }: AddE
           {isAnalyzing && !showTextInput ? <Loader2 size={17} className="spin" /> : <Camera size={17} />}
           Фото блюда
         </button>
-        <button onClick={() => setShowTextInput((v) => !v)} className={styles.textToggle}>
+        <button
+          onClick={() => setShowTextInput((v) => !v)}
+          className={styles.textToggle}
+          aria-label="Описать блюдо текстом"
+        >
           <Type size={17} />
         </button>
         <input
@@ -85,12 +89,18 @@ export function AddEntryControls({ status, onPhotoSelected, onTextSubmit }: AddE
               onChange={(e) => setPhotoDesc(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && confirmPendingPhoto()}
               placeholder="Добавь описание, например: без сахара (необязательно)"
+              aria-label="Описание к фото блюда"
               className={styles.textInput}
               autoFocus
             />
           </div>
           <div className={styles.pendingPhotoActions}>
-            <button onClick={cancelPendingPhoto} disabled={isAnalyzing} className={styles.cancelButton}>
+            <button
+              onClick={cancelPendingPhoto}
+              disabled={isAnalyzing}
+              className={styles.cancelButton}
+              aria-label="Отменить фото"
+            >
               <X size={15} />
             </button>
             <button onClick={confirmPendingPhoto} disabled={isAnalyzing} className={styles.submitButton}>
@@ -108,9 +118,15 @@ export function AddEntryControls({ status, onPhotoSelected, onTextSubmit }: AddE
             onChange={(e) => setTextDesc(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && submitText()}
             placeholder="Например: тарелка плова, 300 г"
+            aria-label="Описание блюда текстом"
             className={styles.textInput}
           />
-          <button onClick={submitText} disabled={isAnalyzing} className={styles.submitButton}>
+          <button
+            onClick={submitText}
+            disabled={isAnalyzing}
+            className={styles.submitButton}
+            aria-label="Добавить запись"
+          >
             {isAnalyzing ? <Loader2 size={15} className="spin" /> : <Plus size={15} />}
           </button>
         </div>

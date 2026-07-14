@@ -5,16 +5,18 @@
 }
 
 .title {
+  margin: 0;
   font-family: var(--font-serif);
   font-size: 1.375rem;
+  font-weight: normal;
   color: var(--color-cream);
 }
 
 .subtitle {
+  margin: 2px 0 0;
   font-family: var(--font-sans);
   font-size: 0.71875rem;
   color: var(--color-muted);
-  margin-top: 2px;
 }
 
 .settingsButton {

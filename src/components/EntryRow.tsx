@@ -9,7 +9,7 @@ interface EntryRowProps {
 
 export function EntryRow({ entry, onDelete }: EntryRowProps) {
   return (
-    <div className={styles.row}>
+    <li className={styles.row}>
       <div className={styles.body}>
         <div className={styles.titleLine}>
           <span className={styles.title}>{entry.title}</span>
@@ -26,9 +26,14 @@ export function EntryRow({ entry, onDelete }: EntryRowProps) {
         </div>
         {entry.note && <div className={styles.note}>{entry.note}</div>}
       </div>
-      <button onClick={() => onDelete(entry.id)} className={styles.deleteButton} title="Удалить запись">
+      <button
+        onClick={() => onDelete(entry.id)}
+        className={styles.deleteButton}
+        title="Удалить запись"
+        aria-label="Удалить запись"
+      >
         <Trash2 size={15} />
       </button>
-    </div>
+    </li>
   );
 }

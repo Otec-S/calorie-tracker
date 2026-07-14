@@ -8,8 +8,11 @@ interface GoalEditorProps {
 export function GoalEditor({ goal, onSave }: GoalEditorProps) {
   return (
     <div className={styles.editor}>
-      <span className={styles.label}>Дневная цель, ккал:</span>
+      <label htmlFor="daily-goal-input" className={styles.label}>
+        Дневная цель, ккал:
+      </label>
       <input
+        id="daily-goal-input"
         type="number"
         defaultValue={goal}
         onKeyDown={(e) => e.key === "Enter" && onSave(e.currentTarget.value)}

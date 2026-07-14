@@ -58,7 +58,7 @@ export default function App() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.content}>
+      <main className={styles.content}>
         <AppHeader onToggleGoalEditor={() => setEditingGoal((v) => !v)} />
 
         {editingGoal && (
@@ -90,8 +90,8 @@ export default function App() {
           onDeleteEntry={deleteEntry}
         />
 
-        <div className={styles.footer}>Оценки калорийности приблизительные · данные хранятся только у тебя</div>
-      </div>
+        <footer className={styles.footer}>Оценки калорийности приблизительные · данные хранятся только у тебя</footer>
+      </main>
     </div>
   );
 }

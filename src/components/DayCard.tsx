@@ -16,9 +16,16 @@ interface DayCardProps {
 export function DayCard({ dateKey, entries, isToday, expanded, onToggle, onDelete }: DayCardProps) {
   const total = entries.reduce((s, e) => s + (e.cal_max || e.cal_min || 0), 0);
 
+  const bodyId = `day-body-${dateKey}`;
+
   return (
     <div className={styles.card}>
-      <button onClick={onToggle} className={`${styles.header} ${isToday ? styles.headerToday : ""}`}>
+      <button
+        onClick={onToggle}
+        className={`${styles.header} ${isToday ? styles.headerToday : ""}`}
+        aria-expanded={expanded}
+        aria-controls={bodyId}
+      >
         <span className={styles.label}>{isToday ? "Сегодня" : fmtDate(dateKey)}</span>
         <span className={styles.summary}>
           <span className={styles.total}>{total} ккал</span>
@@ -30,13 +37,13 @@ export function DayCard({ dateKey, entries, isToday, expanded, onToggle, onDelet
         </span>
       </button>
       {expanded && (
-        <div className={styles.body}>
+        <ul id={bodyId} className={styles.body}>
           {entries.length === 0 ? (
-            <div className={styles.empty}>Пока пусто</div>
+            <li className={styles.empty}>Пока пусто</li>
           ) : (
             entries.map((e) => <EntryRow key={e.id} entry={e} onDelete={(id) => onDelete(dateKey, id)} />)
           )}
-        </div>
+        </ul>
       )}
     </div>
   );

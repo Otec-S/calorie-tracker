@@ -14,18 +14,19 @@ interface EntryHistoryProps {
 export function EntryHistory({ dayOrder, days, expandedDays, onToggleDay, onDeleteEntry }: EntryHistoryProps) {
   const today = todayKey();
   return (
-    <div className={styles.list}>
+    <ul className={styles.list}>
       {dayOrder.map((k) => (
-        <DayCard
-          key={k}
-          dateKey={k}
-          entries={days[k] || []}
-          isToday={k === today}
-          expanded={!!expandedDays[k]}
-          onToggle={() => onToggleDay(k)}
-          onDelete={onDeleteEntry}
-        />
+        <li key={k}>
+          <DayCard
+            dateKey={k}
+            entries={days[k] || []}
+            isToday={k === today}
+            expanded={!!expandedDays[k]}
+            onToggle={() => onToggleDay(k)}
+            onDelete={onDeleteEntry}
+          />
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

@@ -7,14 +7,14 @@ interface AppHeaderProps {
 
 export function AppHeader({ onToggleGoalEditor }: AppHeaderProps) {
   return (
-    <div className={styles.header}>
+    <header className={styles.header}>
       <div>
-        <div className={styles.title}>Дневник калорий</div>
-        <div className={styles.subtitle}>фото → оценка → журнал</div>
+        <h1 className={styles.title}>Дневник калорий</h1>
+        <p className={styles.subtitle}>фото → оценка → журнал</p>
       </div>
-      <button onClick={onToggleGoalEditor} className={styles.settingsButton} title="Настройки">
+      <button onClick={onToggleGoalEditor} className={styles.settingsButton} title="Настройки" aria-label="Настройки">
         <Settings2 size={16} className={styles.settingsIcon} />
       </button>
-    </div>
+    </header>
   );
 }

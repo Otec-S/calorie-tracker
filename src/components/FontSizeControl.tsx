@@ -14,10 +14,22 @@ export function FontSizeControl({ scale, canIncrease, canDecrease, onIncrease, o
     <div className={styles.editor}>
       <span className={styles.label}>Размер шрифта: {Math.round(scale * 100)}%</span>
       <div className={styles.buttons}>
-        <button onClick={onDecrease} disabled={!canDecrease} className={styles.button} title="Уменьшить шрифт">
+        <button
+          onClick={onDecrease}
+          disabled={!canDecrease}
+          className={styles.button}
+          title="Уменьшить шрифт"
+          aria-label="Уменьшить шрифт"
+        >
           <Minus size={14} />
         </button>
-        <button onClick={onIncrease} disabled={!canIncrease} className={styles.button} title="Увеличить шрифт">
+        <button
+          onClick={onIncrease}
+          disabled={!canIncrease}
+          className={styles.button}
+          title="Увеличить шрифт"
+          aria-label="Увеличить шрифт"
+        >
           <Plus size={14} />
         </button>
       </div>

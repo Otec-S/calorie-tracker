@@ -8,9 +8,9 @@ interface ErrorBannerProps {
 
 export function ErrorBanner({ message, onDismiss }: ErrorBannerProps) {
   return (
-    <div className={styles.banner}>
+    <div className={styles.banner} role="alert">
       <span className={styles.message}>{message}</span>
-      <button onClick={onDismiss} className={styles.dismissButton}>
+      <button onClick={onDismiss} className={styles.dismissButton} aria-label="Закрыть сообщение об ошибке">
         <X size={15} />
       </button>
     </div>
