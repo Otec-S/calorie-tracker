@@ -47,6 +47,11 @@ cp server/.env.example server/.env
 ANTHROPIC_API_KEY=sk-ant-...
 PORT=3002
 ALLOWED_ORIGIN=https://78-47-166-130.sslip.io
+
+# Логин на сайт (см. ниже про nginx) — свои значения, не эти
+AUTH_USER=changeme
+AUTH_PASSWORD=changeme
+AUTH_COOKIE_SECRET=<результат `openssl rand -hex 32`>
 ```
 
 ## 3. Запуск backend через pm2
@@ -59,11 +64,21 @@ pm2 startup   # выполнить команду, которую pm2 напеч
 
 ## 4. nginx
 
+Вход на сайт защищён не Basic Auth, а cookie-сессией (год жизни) — логин
+проверяется бэкендом через `auth_request`, страница входа — `/login.html`.
+Это надёжнее переживает переустановку/перезапуск PWA, чем Basic Auth,
+которую браузеры (особенно в standalone-режиме на телефоне) не всегда
+кешируют между запусками.
+
 ```bash
 sudo cp deploy/nginx-calorie-tracker.conf /etc/nginx/sites-available/calorie-tracker
 sudo ln -s /etc/nginx/sites-available/calorie-tracker /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+Логин/пароль задаются переменными `AUTH_USER`/`AUTH_PASSWORD` в
+`server/.env` (шаг 2) — `htpasswd` и `/etc/nginx/.htpasswd` больше не
+используются, можно удалить, если стояли раньше.
 
 ## 5. HTTPS
 
@@ -80,6 +95,12 @@ sudo certbot --nginx -d 78-47-166-130.sslip.io
 cd /var/www/calorie-tracker
 ./deploy/deploy.sh
 ```
+
+`deploy.sh` не трогает nginx-конфиг и `.env` — если менялись именно они
+(как при переходе на cookie-логин выше), их нужно обновить вручную один
+раз: дописать `AUTH_USER`/`AUTH_PASSWORD`/`AUTH_COOKIE_SECRET` в
+`server/.env`, затем повторить команды из шага 4 (`cp` + `nginx -t` +
+`reload`), и только потом гонять `deploy.sh` как обычно.
 
 ## Автодеплой при пуше в master
 
