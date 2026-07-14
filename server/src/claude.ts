@@ -43,12 +43,31 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
       : `Описание от пользователя: "${text}". Оцени калорийность этого блюда.`,
   });
 
-  const response = await anthropic.messages.create({
-    model: "claude-sonnet-5",
-    max_tokens: 1000,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content }],
-  });
+  let response: Anthropic.Message;
+  try {
+    response = await anthropic.messages.create({
+      model: "claude-sonnet-5",
+      max_tokens: 1000,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: "user", content }],
+    });
+  } catch (err) {
+    // The SDK already retries transient errors internally (default
+    // maxRetries); reaching here means retries were exhausted. Translate
+    // the raw APIError (whose .message is the literal wire JSON, e.g.
+    // `529 {"type":"error","error":{"type":"overloaded_error",...}}`)
+    // into something a phone screen should actually show a person.
+    if (err instanceof Anthropic.APIError) {
+      if (err.status === 529 || err.type === "overloaded_error") {
+        throw new Error("Сервис анализа сейчас перегружен, попробуй через минуту");
+      }
+      if (err.status === 429 || err.type === "rate_limit_error") {
+        throw new Error("Слишком много запросов к сервису анализа, подожди немного");
+      }
+      throw new Error("Не получилось связаться с сервисом анализа, попробуй ещё раз");
+    }
+    throw err;
+  }
 
   const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === "text");
   if (!textBlock) throw new Error("Пустой ответ от модели");
