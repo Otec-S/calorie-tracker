@@ -43,7 +43,7 @@ cp server/.env.example server/.env
 
 В `server/.env` вписать:
 
-```
+```env
 ANTHROPIC_API_KEY=sk-ant-...
 PORT=3002
 ALLOWED_ORIGIN=https://78-47-166-130.sslip.io
