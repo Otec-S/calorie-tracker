@@ -80,3 +80,24 @@ sudo certbot --nginx -d 78-47-166-130.sslip.io
 cd /var/www/calorie-tracker
 ./deploy/deploy.sh
 ```
+
+## Автодеплой при пуше в master
+
+`.github/workflows/deploy.yml` при каждом пуше в `master` подключается к
+серверу по SSH и триггерит `deploy/deploy.sh`.
+
+Для этого на сервере в `/root/.ssh/authorized_keys` добавлена отдельная
+(не личная) пара ключей github-actions-deploy-calorie-tracker с
+принудительной командой:
+
+```text
+command="cd /var/www/calorie-tracker && ./deploy/deploy.sh",no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-ed25519 AAAA...
+```
+
+То есть этим ключом с сервера нельзя выполнить ничего, кроме самого
+скрипта деплоя — даже если приватный ключ утечёт. Приватная половина
+ключа лежит в secrets репозитория (`DEPLOY_SSH_KEY`, вместе с
+`DEPLOY_HOST` и `DEPLOY_USER`) и нигде больше.
+
+Чтобы отозвать доступ — удалить эту строку из `authorized_keys` на
+сервере и/или secrets в GitHub.
