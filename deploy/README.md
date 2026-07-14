@@ -62,13 +62,18 @@ pm2 save
 pm2 startup   # выполнить команду, которую pm2 напечатает (systemd автозапуск)
 ```
 
-## 4. nginx
+## 4. nginx + HTTPS
 
 Вход на сайт защищён не Basic Auth, а cookie-сессией (год жизни) — логин
 проверяется бэкендом через `auth_request`, страница входа — `/login.html`.
 Это надёжнее переживает переустановку/перезапуск PWA, чем Basic Auth,
 которую браузеры (особенно в standalone-режиме на телефоне) не всегда
-кешируют между запусками.
+кешируют между запусками. Логин/пароль задаются переменными
+`AUTH_USER`/`AUTH_PASSWORD` из шага 2.
+
+`deploy/nginx-calorie-tracker.conf` уже содержит блок с путями к
+Let's Encrypt сертификату (`ssl_certificate ...`) — на уже задеплоенном
+хосте, где сертификат существует, достаточно просто скопировать файл:
 
 ```bash
 sudo cp deploy/nginx-calorie-tracker.conf /etc/nginx/sites-available/calorie-tracker
@@ -76,15 +81,17 @@ sudo ln -s /etc/nginx/sites-available/calorie-tracker /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Логин/пароль задаются переменными `AUTH_USER`/`AUTH_PASSWORD` в
-`server/.env` (шаг 2) — `htpasswd` и `/etc/nginx/.htpasswd` больше не
-используются, можно удалить, если стояли раньше.
-
-## 5. HTTPS
+На **полностью свежем хосте**, где сертификата ещё нет, `nginx -t` не
+пройдёт (пути к несуществующим файлам сертификата) — сертификат нужно
+получить заранее, ещё до того как этот файл окажется в
+`sites-available`:
 
 ```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d 78-47-166-130.sslip.io
+sudo apt install -y certbot
+sudo systemctl stop nginx
+sudo certbot certonly --standalone -d 78-47-166-130.sslip.io
+sudo systemctl start nginx
+# и только теперь — cp / ln -s / nginx -t / reload, как выше
 ```
 
 Сайт будет на `https://78-47-166-130.sslip.io`.
@@ -96,11 +103,11 @@ cd /var/www/calorie-tracker
 ./deploy/deploy.sh
 ```
 
-`deploy.sh` не трогает nginx-конфиг и `.env` — если менялись именно они
-(как при переходе на cookie-логин выше), их нужно обновить вручную один
-раз: дописать `AUTH_USER`/`AUTH_PASSWORD`/`AUTH_COOKIE_SECRET` в
+`deploy.sh` не трогает nginx-конфиг и `.env` — если менялись именно они,
+их нужно обновить вручную один раз: дописать нужные переменные в
 `server/.env`, затем повторить команды из шага 4 (`cp` + `nginx -t` +
-`reload`), и только потом гонять `deploy.sh` как обычно.
+`reload`, сертификат уже есть — заново гонять certbot не нужно), и
+только потом гонять `deploy.sh` как обычно.
 
 ## Автодеплой при пуше в master
 
