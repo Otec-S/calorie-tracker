@@ -10,6 +10,7 @@ import { EntryHistory } from "./components/EntryHistory.tsx";
 import { useEntries } from "./hooks/useEntries.ts";
 import { useGoal } from "./hooks/useGoal.ts";
 import { useFontSize } from "./hooks/useFontSize.ts";
+import { useSummaries } from "./hooks/useSummaries.ts";
 import { analyzeWithClaude } from "./api/claude.ts";
 import { fileToResizedBase64 } from "./utils/image.ts";
 import type { Status } from "./types.ts";
@@ -19,6 +20,7 @@ export default function App() {
   const { days, dayOrder, expandedDays, todaysTotal, commitEntry, deleteEntry, toggleDay } = useEntries();
   const { goal, editingGoal, setEditingGoal, handleGoalSave } = useGoal();
   const { fontScale, canIncreaseFontSize, canDecreaseFontSize, increaseFontSize, decreaseFontSize } = useFontSize();
+  const { summaries, summaryStatus, summaryErrors, generateSummary } = useSummaries();
 
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -88,6 +90,11 @@ export default function App() {
           expandedDays={expandedDays}
           onToggleDay={toggleDay}
           onDeleteEntry={deleteEntry}
+          summaries={summaries}
+          summaryStatus={summaryStatus}
+          summaryErrors={summaryErrors}
+          goal={goal}
+          onSummarize={generateSummary}
         />
 
         <footer className={styles.footer}>Оценки калорийности приблизительные · данные хранятся только у тебя</footer>

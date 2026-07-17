@@ -1,0 +1,99 @@
+.panel {
+  border-top: 1px dashed rgba(138, 133, 112, 0.33);
+  padding: 12px 0 4px;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-family: var(--font-sans);
+  font-size: 0.78125rem;
+  font-weight: 600;
+  color: var(--color-sage-deep);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.headingIcon {
+  flex-shrink: 0;
+}
+
+.verdict {
+  margin: 0 0 6px;
+  font-family: var(--font-serif);
+  font-size: 0.9375rem;
+  color: var(--color-ink);
+}
+
+.detail {
+  margin: 0 0 4px;
+  font-family: var(--font-sans);
+  font-size: 0.78125rem;
+  color: var(--color-ink);
+}
+
+.detailLabel {
+  font-weight: 600;
+  color: var(--color-sage-deep);
+}
+
+.recommendations {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  font-family: var(--font-sans);
+  font-size: 0.78125rem;
+  color: var(--color-ink);
+}
+
+.recommendations li {
+  margin-bottom: 4px;
+}
+
+.generateButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid var(--color-sage-deep);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: var(--color-sage-deep);
+  cursor: pointer;
+}
+
+.generateButton:hover {
+  background: var(--color-paper-dim);
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  color: var(--color-muted-ink);
+  padding: 2px 0 8px;
+}
+
+.error {
+  font-family: var(--font-sans);
+  font-size: 0.78125rem;
+  color: var(--color-danger);
+  margin-bottom: 8px;
+}
+
+.stale {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--color-paprika);
+}

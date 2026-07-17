@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { analyzeWithClaude } from "./claude.js";
+import { analyzeWithClaude, summarizeDayWithClaude } from "./claude.js";
 import { checkCredentials, issueSessionCookie, verifySessionCookie } from "./auth.js";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -72,6 +72,33 @@ app.post("/api/analyze", analyzeLimiter, async (req, res) => {
   } catch (err) {
     console.error("analyze failed:", err);
     res.status(502).json({ error: err instanceof Error ? err.message : "Analysis failed" });
+  }
+});
+
+// Separate bucket from analyzeLimiter: a day summary is a bigger prompt, and
+// sharing the 20/hour budget would let summaries starve photo analyses.
+const summaryLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Слишком много запросов, попробуй позже" },
+});
+
+app.post("/api/summarize-day", summaryLimiter, async (req, res) => {
+  const { entries, goal } = req.body ?? {};
+
+  if (!Array.isArray(entries) || entries.length === 0) {
+    res.status(400).json({ error: "Provide a non-empty entries array" });
+    return;
+  }
+
+  try {
+    const summary = await summarizeDayWithClaude(entries, typeof goal === "number" ? goal : 0);
+    res.json(summary);
+  } catch (err) {
+    console.error("summarize-day failed:", err);
+    res.status(502).json({ error: err instanceof Error ? err.message : "Summary failed" });
   }
 });
 

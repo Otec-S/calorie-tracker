@@ -45,8 +45,12 @@
 }
 
 .body {
-  margin: 0;
   padding: 0 16px 10px;
+}
+
+.entryList {
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 

@@ -1,6 +1,9 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { EntryRow } from "./EntryRow.tsx";
+import { DaySummaryPanel } from "./DaySummaryPanel.tsx";
 import { fmtDate } from "../utils/date.ts";
+import { entriesSignature, type StoredSummary } from "../storage/summariesStorage.ts";
+import type { SummaryStatus } from "../hooks/useSummaries.ts";
 import styles from "./DayCard.module.css";
 import type { Entry } from "../types.ts";
 
@@ -11,9 +14,26 @@ interface DayCardProps {
   expanded: boolean;
   onToggle: () => void;
   onDelete: (dateKey: string, entryId: string) => void;
+  summary?: StoredSummary;
+  summaryStatus: SummaryStatus;
+  summaryError?: string;
+  goal: number;
+  onSummarize: (dateKey: string, entries: Entry[], goal: number) => void;
 }
 
-export function DayCard({ dateKey, entries, isToday, expanded, onToggle, onDelete }: DayCardProps) {
+export function DayCard({
+  dateKey,
+  entries,
+  isToday,
+  expanded,
+  onToggle,
+  onDelete,
+  summary,
+  summaryStatus,
+  summaryError,
+  goal,
+  onSummarize,
+}: DayCardProps) {
   const total = entries.reduce((s, e) => s + (e.cal_max || e.cal_min || 0), 0);
 
   const bodyId = `day-body-${dateKey}`;
@@ -37,13 +57,24 @@ export function DayCard({ dateKey, entries, isToday, expanded, onToggle, onDelet
         </span>
       </button>
       {expanded && (
-        <ul id={bodyId} className={styles.body}>
-          {entries.length === 0 ? (
-            <li className={styles.empty}>Пока пусто</li>
-          ) : (
-            entries.map((e) => <EntryRow key={e.id} entry={e} onDelete={(id) => onDelete(dateKey, id)} />)
+        <div id={bodyId} className={styles.body}>
+          <ul className={styles.entryList}>
+            {entries.length === 0 ? (
+              <li className={styles.empty}>Пока пусто</li>
+            ) : (
+              entries.map((e) => <EntryRow key={e.id} entry={e} onDelete={(id) => onDelete(dateKey, id)} />)
+            )}
+          </ul>
+          {entries.length > 0 && (
+            <DaySummaryPanel
+              stored={summary}
+              status={summaryStatus}
+              error={summaryError}
+              stale={!!summary && summary.signature !== entriesSignature(entries)}
+              onGenerate={() => onSummarize(dateKey, entries, goal)}
+            />
           )}
-        </ul>
+        </div>
       )}
     </div>
   );

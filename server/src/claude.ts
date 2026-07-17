@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { FoodAnalysis } from "./types.js";
+import type { DaySummary, FoodAnalysis } from "./types.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -29,9 +29,59 @@ const ANALYZE_TOOL: Anthropic.Tool = {
   },
 };
 
+const SUMMARY_SYSTEM_PROMPT = `Ты — нутрициолог-аналитик. Тебе дают список всего, что человек съел за день, и его дневную цель по калориям.
+Оцени рацион в целом и передай результат через инструмент submit_day_summary: общий вердикт о полезности рациона, гармоничность БЖУ, попадание в цель по калориям и 2-3 конкретные рекомендации на будущее.
+Пиши по-русски, коротко и по делу, без нравоучений.`;
+
+const SUMMARY_TOOL: Anthropic.Tool = {
+  name: "submit_day_summary",
+  description: "Отправить сводный разбор рациона за день.",
+  strict: true,
+  input_schema: {
+    type: "object",
+    properties: {
+      verdict: { type: "string", description: "общая оценка полезности рациона за день, 1-2 предложения" },
+      macro_balance: { type: "string", description: "оценка гармоничности БЖУ, 1-2 предложения" },
+      calorie_target: { type: "string", description: "попадание в дневную цель по калориям, 1 предложение" },
+      recommendations: {
+        type: "array",
+        items: { type: "string" },
+        description: "2-3 конкретные рекомендации по питанию на будущее",
+      },
+    },
+    required: ["verdict", "macro_balance", "calorie_target", "recommendations"],
+    additionalProperties: false,
+  },
+};
+
 interface AnalyzeInput {
   base64?: string;
   text?: string;
+}
+
+/** One eaten dish as sent by the frontend: analysis fields plus the entry time. */
+export interface DayEntry extends FoodAnalysis {
+  time?: string;
+}
+
+/**
+ * Translates a raw APIError (whose .message is the literal wire JSON, e.g.
+ * `529 {"type":"error","error":{"type":"overloaded_error",...}}`) into
+ * something a phone screen should actually show a person. The SDK already
+ * retries transient errors internally (default maxRetries); getting one of
+ * these means retries were exhausted.
+ */
+function toFriendlyError(err: unknown): Error {
+  if (err instanceof Anthropic.APIError) {
+    if (err.status === 529 || err.type === "overloaded_error") {
+      return new Error("Сервис анализа сейчас перегружен, попробуй через минуту");
+    }
+    if (err.status === 429 || err.type === "rate_limit_error") {
+      return new Error("Слишком много запросов к сервису анализа, подожди немного");
+    }
+    return new Error("Не получилось связаться с сервисом анализа, попробуй ещё раз");
+  }
+  return err instanceof Error ? err : new Error(String(err));
 }
 
 /**
@@ -64,21 +114,7 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
       messages: [{ role: "user", content }],
     });
   } catch (err) {
-    // The SDK already retries transient errors internally (default
-    // maxRetries); reaching here means retries were exhausted. Translate
-    // the raw APIError (whose .message is the literal wire JSON, e.g.
-    // `529 {"type":"error","error":{"type":"overloaded_error",...}}`)
-    // into something a phone screen should actually show a person.
-    if (err instanceof Anthropic.APIError) {
-      if (err.status === 529 || err.type === "overloaded_error") {
-        throw new Error("Сервис анализа сейчас перегружен, попробуй через минуту");
-      }
-      if (err.status === 429 || err.type === "rate_limit_error") {
-        throw new Error("Слишком много запросов к сервису анализа, подожди немного");
-      }
-      throw new Error("Не получилось связаться с сервисом анализа, попробуй ещё раз");
-    }
-    throw err;
+    throw toFriendlyError(err);
   }
 
   const toolUse = response.content.find(
@@ -86,4 +122,49 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
   );
   if (!toolUse) throw new Error("Пустой ответ от модели");
   return toolUse.input as FoodAnalysis;
+}
+
+/**
+ * Sends the whole day's entries to Claude and returns a structured verdict
+ * on the diet: overall healthiness, macro balance, calorie-goal fit, and
+ * concrete recommendations.
+ */
+export async function summarizeDayWithClaude(entries: DayEntry[], goal: number): Promise<DaySummary> {
+  const lines = entries.map((e) => {
+    const cal = e.cal_min === e.cal_max ? `${e.cal_min}` : `${e.cal_min}–${e.cal_max}`;
+    const time = e.time ? `${e.time} — ` : "";
+    const portion = e.portion ? `, порция: ${e.portion}` : "";
+    const note = e.note ? ` (${e.note})` : "";
+    return `- ${time}${e.title}: ${cal} ккал, Б ${e.protein_g}г / Ж ${e.fat_g}г / У ${e.carbs_g}г${portion}${note}`;
+  });
+
+  const totalMin = entries.reduce((s, e) => s + (e.cal_min || 0), 0);
+  const totalMax = entries.reduce((s, e) => s + (e.cal_max || 0), 0);
+
+  const goalLine = goal > 0 ? ` Дневная цель: ${goal} ккал.` : "";
+  const text = `Съедено за день:
+${lines.join("\n")}
+
+Итого примерно ${totalMin}–${totalMax} ккал.${goalLine}
+Оцени рацион за день.`;
+
+  let response: Anthropic.Message;
+  try {
+    response = await anthropic.messages.create({
+      model: "claude-sonnet-5",
+      max_tokens: 1000,
+      system: SUMMARY_SYSTEM_PROMPT,
+      tools: [SUMMARY_TOOL],
+      tool_choice: { type: "tool", name: "submit_day_summary" },
+      messages: [{ role: "user", content: text }],
+    });
+  } catch (err) {
+    throw toFriendlyError(err);
+  }
+
+  const toolUse = response.content.find(
+    (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "submit_day_summary",
+  );
+  if (!toolUse) throw new Error("Пустой ответ от модели");
+  return toolUse.input as DaySummary;
 }

@@ -1,4 +1,4 @@
-import type { FoodAnalysis } from "../types.ts";
+import type { DaySummary, Entry, FoodAnalysis } from "../types.ts";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 
@@ -25,4 +25,23 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
   }
 
   return (await response.json()) as FoodAnalysis;
+}
+
+/**
+ * Sends a whole day's entries (plus the calorie goal) to the backend proxy
+ * and returns Claude's structured verdict on the day's diet.
+ */
+export async function summarizeDay(entries: Entry[], goal: number): Promise<DaySummary> {
+  const response = await fetch(`${API_BASE_URL}/api/summarize-day`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ entries, goal }),
+  });
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null);
+    throw new Error(body?.error || `Ошибка запроса: ${response.status}`);
+  }
+
+  return (await response.json()) as DaySummary;
 }
