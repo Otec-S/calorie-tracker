@@ -3,21 +3,31 @@ import type { FoodAnalysis } from "./types.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `Ты — нутрициолог-аналитик. По фото еды (или по текстовому описанию) оцени состав и калорийность.
-Отвечай СТРОГО одним JSON-объектом, без markdown-разметки, без пояснений до или после. Формат:
-{
-  "title": "короткое название блюда по-русски (3-6 слов)",
-  "items": "краткий список того, что видно на фото, через запятую, по-русски",
-  "portion": "оценка размера порции (например '~250 г' или '1 средняя тарелка')",
-  "cal_min": число,
-  "cal_max": число,
-  "protein_g": число,
-  "fat_g": число,
-  "carbs_g": число,
-  "note": "одно короткое предложение по-русски о пользе/минусах блюда"
-}
-Если на фото нет еды или её невозможно определить — верни title: "Не удалось распознать" и cal_min/cal_max: 0.
-Числа — целые, без единиц измерения внутри числовых полей.`;
+const SYSTEM_PROMPT = `Ты — нутрициолог-аналитик. По фото еды (или по текстовому описанию) оцени состав и калорийность и передай результат через инструмент submit_food_analysis.
+Если на фото нет еды или её невозможно определить — передай title: "Не удалось распознать" и cal_min/cal_max: 0.
+Числа — целые, без единиц измерения.`;
+
+const ANALYZE_TOOL: Anthropic.Tool = {
+  name: "submit_food_analysis",
+  description: "Отправить результат анализа калорийности и БЖУ блюда.",
+  strict: true,
+  input_schema: {
+    type: "object",
+    properties: {
+      title: { type: "string", description: "короткое название блюда по-русски (3-6 слов)" },
+      items: { type: "string", description: "краткий список того, что видно на фото, через запятую, по-русски" },
+      portion: { type: "string", description: "оценка размера порции (например '~250 г' или '1 средняя тарелка')" },
+      cal_min: { type: "integer" },
+      cal_max: { type: "integer" },
+      protein_g: { type: "integer" },
+      fat_g: { type: "integer" },
+      carbs_g: { type: "integer" },
+      note: { type: "string", description: "одно короткое предложение по-русски о пользе/минусах блюда" },
+    },
+    required: ["title", "items", "portion", "cal_min", "cal_max", "protein_g", "fat_g", "carbs_g", "note"],
+    additionalProperties: false,
+  },
+};
 
 interface AnalyzeInput {
   base64?: string;
@@ -49,6 +59,8 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
       model: "claude-sonnet-5",
       max_tokens: 1000,
       system: SYSTEM_PROMPT,
+      tools: [ANALYZE_TOOL],
+      tool_choice: { type: "tool", name: "submit_food_analysis" },
       messages: [{ role: "user", content }],
     });
   } catch (err) {
@@ -69,8 +81,9 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
     throw err;
   }
 
-  const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === "text");
-  if (!textBlock) throw new Error("Пустой ответ от модели");
-  const cleaned = textBlock.text.replace(/```json|```/g, "").trim();
-  return JSON.parse(cleaned) as FoodAnalysis;
+  const toolUse = response.content.find(
+    (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "submit_food_analysis",
+  );
+  if (!toolUse) throw new Error("Пустой ответ от модели");
+  return toolUse.input as FoodAnalysis;
 }
