@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, Send, Trash2, X } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import styles from "./DietChat.module.css";
 import { useChatHistory } from "../hooks/useChatHistory.ts";
 
@@ -49,11 +51,17 @@ export function DietChat({ goal, onClose }: DietChatProps) {
           </p>
         )}
         <ul className={styles.list}>
-          {messages.map((m) => (
-            <li key={m.id} className={m.role === "user" ? styles.userBubble : styles.assistantBubble}>
-              {m.content}
-            </li>
-          ))}
+          {messages.map((m) =>
+            m.role === "user" ? (
+              <li key={m.id} className={styles.userBubble}>
+                {m.content}
+              </li>
+            ) : (
+              <li key={m.id} className={`${styles.assistantBubble} ${styles.markdown}`}>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+              </li>
+            ),
+          )}
           {status === "sending" && (
             <li className={styles.assistantBubble}>
               <Loader2 size={14} className="spin" />

@@ -88,6 +88,44 @@
   border-bottom-left-radius: 4px;
 }
 
+.markdown {
+  white-space: normal;
+}
+
+.markdown :global(p) {
+  margin: 0 0 8px;
+}
+
+.markdown :global(p:last-child) {
+  margin-bottom: 0;
+}
+
+.markdown :global(ul),
+.markdown :global(ol) {
+  margin: 0 0 8px;
+  padding-left: 1.25em;
+}
+
+.markdown :global(ul:last-child),
+.markdown :global(ol:last-child) {
+  margin-bottom: 0;
+}
+
+.markdown :global(li) {
+  margin-bottom: 2px;
+}
+
+.markdown :global(strong) {
+  font-weight: 600;
+}
+
+.markdown :global(code) {
+  background: var(--color-bg-deep);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: 0.85em;
+}
+
 .error {
   margin: 0 16px 8px;
   font-family: var(--font-sans);
