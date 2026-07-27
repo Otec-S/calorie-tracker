@@ -68,7 +68,7 @@ photo/text-analysis flow (`status`: idle/analyzing/error).
 
 **PWA**: `vite-plugin-pwa` (configured in `vite.config.ts`) generates the
 manifest and service worker at build time. Icons are pre-generated (not at
-build time) via `@vite-pwa/assets-generator` from `public/favicon.svg`,
+build time) via `@vite-pwa/assets-generator` from `public/favicon-source.png`,
 config in `pwa-assets.config.ts` — re-run `npx pwa-assets-generator` if the
 source icon changes. The service worker is configured `NetworkOnly` for
 `/api/*` since those calls cost real Anthropic API usage and must never be
