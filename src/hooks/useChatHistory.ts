@@ -3,7 +3,7 @@ import { sendChatMessage } from "../api/claude.ts";
 import { clearChat, loadChat, saveChat, type StoredChatMessage } from "../storage/chatStorage.ts";
 import { loadAllDayKeys, loadDay } from "../storage/entriesStorage.ts";
 import { todayKey } from "../utils/date.ts";
-import type { ChatMessage, Entry } from "../types.ts";
+import type { ChatAttachment, ChatMessage, Entry } from "../types.ts";
 
 // Only the tail of the thread is sent to the model each turn — keeps token
 // cost and latency bounded even as the persisted thread grows unbounded.
@@ -41,8 +41,14 @@ export function useChatHistory(goal: number) {
   }, []);
 
   const sendMessage = useCallback(
-    async (text: string) => {
-      const userMsg: StoredChatMessage = { id: makeId(), role: "user", content: text, ts: new Date().toISOString() };
+    async (text: string, attachments?: ChatAttachment[]) => {
+      const userMsg: StoredChatMessage = {
+        id: makeId(),
+        role: "user",
+        content: text,
+        attachments,
+        ts: new Date().toISOString(),
+      };
       const withUser = [...messages, userMsg];
       setMessages(withUser);
       saveChat(withUser);
@@ -52,7 +58,7 @@ export function useChatHistory(goal: number) {
       try {
         const history: ChatMessage[] = withUser
           .slice(-HISTORY_LIMIT)
-          .map(({ role, content }) => ({ role, content }));
+          .map(({ role, content, attachments }) => ({ role, content, attachments }));
         const reply = await sendChatMessage(history, recentDays(), goal);
         const assistantMsg: StoredChatMessage = {
           id: makeId(),

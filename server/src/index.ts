@@ -17,7 +17,7 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGIN ?? "http://localhost:5173")
 const app = express();
 app.set("trust proxy", 1); // behind nginx in production — needed for correct req.ip
 app.use(cors({ origin: ALLOWED_ORIGINS }));
-app.use(express.json({ limit: "10mb" })); // resized photos are base64-encoded here
+app.use(express.json({ limit: "25mb" })); // resized photos / chat attachments are base64-encoded here
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });

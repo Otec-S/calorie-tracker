@@ -170,7 +170,26 @@ ${lines.join("\n")}
 }
 
 const CHAT_SYSTEM_PROMPT = `Ты — нутрициолог-консультант. Пользователь ведёт дневник питания и задаёт тебе уточняющие вопросы по планированию рациона: что съесть дальше, укладывается ли он в цель по калориям, как сбалансировать БЖУ и т.п.
+Пользователь может прикладывать к сообщению фото (например, блюда, состава продукта, результатов анализов) или PDF-документы — учитывай их содержимое в ответе.
 Отвечай по-русски, коротко и по делу, как в переписке — без длинных вступлений и нравоучений. Опирайся на данные о питании пользователя, приведённые ниже.`;
+
+/**
+ * Converts one stored chat turn into the content shape the Anthropic SDK
+ * expects — plain text when there's nothing attached (cheapest, most
+ * common case), or an array with image/document blocks ahead of the text
+ * block when the user attached files to that turn.
+ */
+function toApiContent(m: ChatMessage): string | Anthropic.ContentBlockParam[] {
+  if (!m.attachments || m.attachments.length === 0) return m.content;
+
+  const blocks: Anthropic.ContentBlockParam[] = m.attachments.map((a) =>
+    a.mediaType === "application/pdf"
+      ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: a.base64 } }
+      : { type: "image", source: { type: "base64", media_type: a.mediaType, data: a.base64 } },
+  );
+  if (m.content) blocks.push({ type: "text", text: m.content });
+  return blocks;
+}
 
 /**
  * Renders a user's recent food log (grouped by date) into the plain-text
@@ -215,7 +234,7 @@ export async function chatAboutDietWithClaude(
       model: "claude-sonnet-5",
       max_tokens: 1000,
       system,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      messages: messages.map((m) => ({ role: m.role, content: toApiContent(m) })),
     });
   } catch (err) {
     throw toFriendlyError(err);

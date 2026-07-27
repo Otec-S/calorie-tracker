@@ -26,7 +26,15 @@ export interface DaySummary {
 }
 
 // Kept in sync with server/src/types.ts (separate TS projects).
+export interface ChatAttachment {
+  mediaType: "image/jpeg" | "image/png" | "image/webp" | "image/gif" | "application/pdf";
+  base64: string; // no data: URL prefix
+  name: string;
+}
+
+// Kept in sync with server/src/types.ts (separate TS projects).
 export interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+  attachments?: ChatAttachment[];
 }

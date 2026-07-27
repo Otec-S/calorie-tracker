@@ -1,3 +1,13 @@
+/** Reads a file as base64 (without the data URL prefix), no resizing. */
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Не удалось прочитать файл"));
+    reader.onload = () => resolve((reader.result as string).split(",")[1]);
+    reader.readAsDataURL(file);
+  });
+}
+
 /**
  * Reads an image file, downsizes it to fit within maxDim on its longest
  * side, and returns the base64-encoded JPEG payload (without the data URL
