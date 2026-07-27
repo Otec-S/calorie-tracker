@@ -7,6 +7,8 @@ import { AddEntryControls } from "./components/AddEntryControls.tsx";
 import { AnalyzingPreview } from "./components/AnalyzingPreview.tsx";
 import { ErrorBanner } from "./components/ErrorBanner.tsx";
 import { EntryHistory } from "./components/EntryHistory.tsx";
+import { FloatingChatButton } from "./components/FloatingChatButton.tsx";
+import { DietChat } from "./components/DietChat.tsx";
 import { useEntries } from "./hooks/useEntries.ts";
 import { useGoal } from "./hooks/useGoal.ts";
 import { useFontSize } from "./hooks/useFontSize.ts";
@@ -25,6 +27,7 @@ export default function App() {
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [pendingPreview, setPendingPreview] = useState<string | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
   async function handlePhotoSelected(file: File, description?: string) {
     setStatus("analyzing");
@@ -99,6 +102,9 @@ export default function App() {
 
         <footer className={styles.footer}>Оценки калорийности приблизительные · данные хранятся только у тебя</footer>
       </main>
+
+      <FloatingChatButton onClick={() => setChatOpen(true)} />
+      {chatOpen && <DietChat goal={goal} onClose={() => setChatOpen(false)} />}
     </div>
   );
 }

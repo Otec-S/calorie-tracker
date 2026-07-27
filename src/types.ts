@@ -24,3 +24,9 @@ export interface DaySummary {
   calorie_target: string; // попадание в цель по калориям
   recommendations: string[]; // рекомендации на будущее
 }
+
+// Kept in sync with server/src/types.ts (separate TS projects).
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}

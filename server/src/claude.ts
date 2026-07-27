@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { DaySummary, FoodAnalysis } from "./types.js";
+import type { ChatMessage, DaySummary, FoodAnalysis } from "./types.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -167,4 +167,61 @@ ${lines.join("\n")}
   );
   if (!toolUse) throw new Error("Пустой ответ от модели");
   return toolUse.input as DaySummary;
+}
+
+const CHAT_SYSTEM_PROMPT = `Ты — нутрициолог-консультант. Пользователь ведёт дневник питания и задаёт тебе уточняющие вопросы по планированию рациона: что съесть дальше, укладывается ли он в цель по калориям, как сбалансировать БЖУ и т.п.
+Отвечай по-русски, коротко и по делу, как в переписке — без длинных вступлений и нравоучений. Опирайся на данные о питании пользователя, приведённые ниже.`;
+
+/**
+ * Renders a user's recent food log (grouped by date) into the plain-text
+ * block injected into the chat system prompt, so the model can reason about
+ * what was already eaten without a tool round-trip.
+ */
+function formatDietContext(days: Record<string, DayEntry[]>, goal: number): string {
+  const dateKeys = Object.keys(days).sort();
+  const dayBlocks = dateKeys.map((dateKey) => {
+    const entries = days[dateKey];
+    if (!entries || entries.length === 0) return `${dateKey}: ничего не съедено`;
+    const lines = entries.map((e) => {
+      const cal = e.cal_min === e.cal_max ? `${e.cal_min}` : `${e.cal_min}–${e.cal_max}`;
+      const time = e.time ? `${e.time} — ` : "";
+      return `  - ${time}${e.title}: ${cal} ккал, Б ${e.protein_g}г / Ж ${e.fat_g}г / У ${e.carbs_g}г`;
+    });
+    const totalMin = entries.reduce((s, e) => s + (e.cal_min || 0), 0);
+    const totalMax = entries.reduce((s, e) => s + (e.cal_max || 0), 0);
+    return `${dateKey} (итого ~${totalMin}–${totalMax} ккал):\n${lines.join("\n")}`;
+  });
+
+  const goalLine = goal > 0 ? `\n\nДневная цель по калориям: ${goal} ккал.` : "";
+  return `Данные о питании пользователя за последние дни:\n\n${dayBlocks.join("\n\n")}${goalLine}`;
+}
+
+/**
+ * Sends a multi-turn conversation to Claude with the user's recent food log
+ * folded into the system prompt (rebuilt fresh on every call, since the log
+ * can change mid-conversation). No tool use — this is free-form advice, not
+ * a structured record.
+ */
+export async function chatAboutDietWithClaude(
+  messages: ChatMessage[],
+  days: Record<string, DayEntry[]>,
+  goal: number,
+): Promise<string> {
+  const system = `${CHAT_SYSTEM_PROMPT}\n\n${formatDietContext(days, goal)}`;
+
+  let response: Anthropic.Message;
+  try {
+    response = await anthropic.messages.create({
+      model: "claude-sonnet-5",
+      max_tokens: 1000,
+      system,
+      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+    });
+  } catch (err) {
+    throw toFriendlyError(err);
+  }
+
+  const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === "text");
+  if (!textBlock) throw new Error("Пустой ответ от модели");
+  return textBlock.text;
 }

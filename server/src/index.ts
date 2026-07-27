@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
-import { analyzeWithClaude, summarizeDayWithClaude } from "./claude.js";
+import { analyzeWithClaude, chatAboutDietWithClaude, summarizeDayWithClaude } from "./claude.js";
 import { checkCredentials, issueSessionCookie, verifySessionCookie } from "./auth.js";
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
@@ -99,6 +99,37 @@ app.post("/api/summarize-day", summaryLimiter, async (req, res) => {
   } catch (err) {
     console.error("summarize-day failed:", err);
     res.status(502).json({ error: err instanceof Error ? err.message : "Summary failed" });
+  }
+});
+
+// Separate bucket from analyze/summarize: a chat session can involve several
+// back-and-forth turns, so it gets its own budget rather than starving them.
+const chatLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "Слишком много запросов, попробуй позже" },
+});
+
+app.post("/api/diet-chat", chatLimiter, async (req, res) => {
+  const { messages, days, goal } = req.body ?? {};
+
+  if (!Array.isArray(messages) || messages.length === 0) {
+    res.status(400).json({ error: "Provide a non-empty messages array" });
+    return;
+  }
+  if (typeof days !== "object" || days === null) {
+    res.status(400).json({ error: "Provide days" });
+    return;
+  }
+
+  try {
+    const reply = await chatAboutDietWithClaude(messages, days, typeof goal === "number" ? goal : 0);
+    res.json({ reply });
+  } catch (err) {
+    console.error("diet-chat failed:", err);
+    res.status(502).json({ error: err instanceof Error ? err.message : "Chat failed" });
   }
 });
 
