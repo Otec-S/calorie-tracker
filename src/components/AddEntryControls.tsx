@@ -78,13 +78,11 @@ export function AddEntryControls({
         >
           <Type size={17} />
         </button>
-        <button onClick={onAddProtein} className={styles.proteinButton}>
+        <button onClick={onAddProtein} className={styles.proteinButton} aria-label="Добавить белок">
           <Dumbbell size={17} />
-          Белок
         </button>
-        <button onClick={onAddCappuccino} className={styles.proteinButton}>
+        <button onClick={onAddCappuccino} className={styles.proteinButton} aria-label="Добавить капучино">
           <Coffee size={17} />
-          Капучино
         </button>
         <input
           ref={fileInputRef}
