@@ -32,9 +32,24 @@ npm --prefix server run build   # backend: tsc -> server/dist/
 
 npm run lint             # oxlint (frontend)
 npm --prefix server run lint    # oxlint (backend)
+
+npm test                 # frontend: vitest run
+npm --prefix server test # backend: vitest run
 ```
 
-There is no test suite in this repo.
+**Testing scope is deliberately narrow.** Vitest covers the pure, silent-bug-prone
+logic only — the 3am day boundary in `src/utils/date.ts`, the attachment
+branching in `src/utils/attachments.ts`, the goal/font-scale clamps, the
+localStorage key handling, the fetch error mapping, and on the backend the
+prompt builders in `server/src/claude.ts`, the session HMAC in `auth.ts`, and
+every route's validation via supertest. There are deliberately **no component
+or hook tests** — this is a single-user app whose UI changes often, and those
+tests would cost more than they catch.
+
+Frontend tests default to `environment: "node"`; the one suite that needs
+`localStorage` opts into jsdom with a `@vitest-environment jsdom` docblock
+(running jsdom everywhere cost ~50s per run). `server/tsconfig.json` excludes
+`*.test.ts` so tests never reach `server/dist/`.
 
 Frontend needs `.env` (copy from `.env.example`) with `VITE_API_BASE_URL`.
 Backend needs `server/.env` (copy from `server/.env.example`) with

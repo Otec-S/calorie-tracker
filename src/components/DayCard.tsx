@@ -2,6 +2,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { EntryRow } from "./EntryRow.tsx";
 import { DaySummaryPanel } from "./DaySummaryPanel.tsx";
 import { fmtDate } from "../utils/date.ts";
+import { totalCalories } from "../utils/calories.ts";
 import { entriesSignature, type StoredSummary } from "../storage/summariesStorage.ts";
 import type { SummaryStatus } from "../hooks/useSummaries.ts";
 import styles from "./DayCard.module.css";
@@ -34,7 +35,7 @@ export function DayCard({
   goal,
   onSummarize,
 }: DayCardProps) {
-  const total = entries.reduce((s, e) => s + (e.cal_max || e.cal_min || 0), 0);
+  const total = totalCalories(entries);
 
   const bodyId = `day-body-${dateKey}`;
 

@@ -15,5 +15,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // Tests must not end up in dist/ — `npm start` runs straight off dist/.
+  "exclude": ["src/**/*.test.ts", "src/test-setup.ts"]
 }

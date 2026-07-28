@@ -1,9 +1,6 @@
 import { useCallback, useState } from "react";
 import { loadGoal, saveGoal } from "../storage/goalStorage.ts";
-
-const MIN_GOAL = 500;
-const MAX_GOAL = 6000;
-const DEFAULT_GOAL = 2300;
+import { clampGoal } from "../utils/goal.ts";
 
 /** Owns the daily calorie goal, persisted to localStorage. */
 export function useGoal() {
@@ -11,7 +8,7 @@ export function useGoal() {
   const [editingGoal, setEditingGoal] = useState(false);
 
   const handleGoalSave = useCallback((rawValue: string) => {
-    const n = Math.max(MIN_GOAL, Math.min(MAX_GOAL, parseInt(rawValue, 10) || DEFAULT_GOAL));
+    const n = clampGoal(rawValue);
     setGoal(n);
     saveGoal(n);
   }, []);

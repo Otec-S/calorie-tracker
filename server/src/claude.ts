@@ -71,7 +71,7 @@ export interface DayEntry extends FoodAnalysis {
  * retries transient errors internally (default maxRetries); getting one of
  * these means retries were exhausted.
  */
-function toFriendlyError(err: unknown): Error {
+export function toFriendlyError(err: unknown): Error {
   if (err instanceof Anthropic.APIError) {
     if (err.status === 529 || err.type === "overloaded_error") {
       return new Error("Сервис анализа сейчас перегружен, попробуй через минуту");
@@ -179,7 +179,7 @@ const CHAT_SYSTEM_PROMPT = `Ты — нутрициолог-консультан
  * common case), or an array with image/document blocks ahead of the text
  * block when the user attached files to that turn.
  */
-function toApiContent(m: ChatMessage): string | Anthropic.ContentBlockParam[] {
+export function toApiContent(m: ChatMessage): string | Anthropic.ContentBlockParam[] {
   if (!m.attachments || m.attachments.length === 0) return m.content;
 
   const blocks: Anthropic.ContentBlockParam[] = m.attachments.map((a) =>
@@ -196,7 +196,7 @@ function toApiContent(m: ChatMessage): string | Anthropic.ContentBlockParam[] {
  * block injected into the chat system prompt, so the model can reason about
  * what was already eaten without a tool round-trip.
  */
-function formatDietContext(days: Record<string, DayEntry[]>, goal: number): string {
+export function formatDietContext(days: Record<string, DayEntry[]>, goal: number): string {
   const dateKeys = Object.keys(days).sort();
   const dayBlocks = dateKeys.map((dateKey) => {
     const entries = days[dateKey];

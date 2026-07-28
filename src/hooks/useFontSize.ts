@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { loadFontScale, saveFontScale } from "../storage/fontSizeStorage.ts";
-
-const MIN_SCALE = 0.9;
-const MAX_SCALE = 1.4;
-const STEP = 0.1;
-const BASE_FONT_PX = 16;
+import { BASE_FONT_PX, MAX_SCALE, MIN_SCALE, SCALE_STEP, stepFontScale } from "../utils/fontScale.ts";
 
 /** Owns the app-wide font-size scale, persisted to localStorage and applied to the document root. */
 export function useFontSize() {
@@ -16,7 +12,7 @@ export function useFontSize() {
 
   const increaseFontSize = useCallback(() => {
     setScale((s) => {
-      const next = Math.min(MAX_SCALE, Math.round((s + STEP) * 100) / 100);
+      const next = stepFontScale(s, SCALE_STEP);
       saveFontScale(next);
       return next;
     });
@@ -24,7 +20,7 @@ export function useFontSize() {
 
   const decreaseFontSize = useCallback(() => {
     setScale((s) => {
-      const next = Math.max(MIN_SCALE, Math.round((s - STEP) * 100) / 100);
+      const next = stepFontScale(s, -SCALE_STEP);
       saveFontScale(next);
       return next;
     });

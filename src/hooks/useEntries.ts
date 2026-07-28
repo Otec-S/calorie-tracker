@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { loadAllDayKeys, loadDay, saveDay } from "../storage/entriesStorage.ts";
 import { todayKey } from "../utils/date.ts";
+import { totalCalories } from "../utils/calories.ts";
 import type { Entry, FoodAnalysis } from "../types.ts";
 
 type DaysMap = Record<string, Entry[]>;
@@ -58,10 +59,7 @@ export function useEntries() {
   }, []);
 
   const todaysEntries = useMemo(() => days[todayKey()] || [], [days]);
-  const todaysTotal = useMemo(
-    () => todaysEntries.reduce((s, e) => s + (e.cal_max || e.cal_min || 0), 0),
-    [todaysEntries],
-  );
+  const todaysTotal = useMemo(() => totalCalories(todaysEntries), [todaysEntries]);
 
   return {
     days,

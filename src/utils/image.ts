@@ -9,6 +9,24 @@ export function fileToBase64(file: File): Promise<string> {
 }
 
 /**
+ * Scales a width/height pair down so neither side exceeds maxDim, preserving
+ * aspect ratio. Images that already fit are returned untouched.
+ */
+export function fitWithin(
+  width: number,
+  height: number,
+  maxDim: number,
+): { width: number; height: number } {
+  if (width > height && width > maxDim) {
+    return { width: maxDim, height: Math.round((height * maxDim) / width) };
+  }
+  if (height > maxDim) {
+    return { width: Math.round((width * maxDim) / height), height: maxDim };
+  }
+  return { width, height };
+}
+
+/**
  * Reads an image file, downsizes it to fit within maxDim on its longest
  * side, and returns the base64-encoded JPEG payload (without the data URL
  * prefix) ready to send to the Claude API.
@@ -21,14 +39,7 @@ export function fileToResizedBase64(file: File, maxDim = 900, quality = 0.72): P
       const img = new Image();
       img.onerror = () => reject(new Error("Не удалось загрузить изображение"));
       img.onload = () => {
-        let { width, height } = img;
-        if (width > height && width > maxDim) {
-          height = Math.round((height * maxDim) / width);
-          width = maxDim;
-        } else if (height > maxDim) {
-          width = Math.round((width * maxDim) / height);
-          height = maxDim;
-        }
+        const { width, height } = fitWithin(img.width, img.height, maxDim);
         const canvas = document.createElement("canvas");
         canvas.width = width;
         canvas.height = height;

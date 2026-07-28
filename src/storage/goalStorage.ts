@@ -1,5 +1,6 @@
+import { DEFAULT_GOAL } from "../utils/goal.ts";
+
 const KEY = "calorie-tracker:settings:goal";
-const DEFAULT_GOAL = 2300;
 
 export function loadGoal(): number {
   try {
