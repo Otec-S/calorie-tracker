@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Loader2, Plus, Type, X } from "lucide-react";
+import { Camera, Dumbbell, Loader2, Plus, Type, X } from "lucide-react";
 import styles from "./AddEntryControls.module.css";
 import type { Status } from "../types.ts";
 
@@ -7,9 +7,10 @@ interface AddEntryControlsProps {
   status: Status;
   onPhotoSelected: (file: File, description?: string) => void;
   onTextSubmit: (text: string) => void;
+  onAddProtein: () => void;
 }
 
-export function AddEntryControls({ status, onPhotoSelected, onTextSubmit }: AddEntryControlsProps) {
+export function AddEntryControls({ status, onPhotoSelected, onTextSubmit, onAddProtein }: AddEntryControlsProps) {
   const [showTextInput, setShowTextInput] = useState(false);
   const [textDesc, setTextDesc] = useState("");
   const [pendingFile, setPendingFile] = useState<File | null>(null);
@@ -69,6 +70,10 @@ export function AddEntryControls({ status, onPhotoSelected, onTextSubmit }: AddE
           aria-label="Описать блюдо текстом"
         >
           <Type size={17} />
+        </button>
+        <button onClick={onAddProtein} className={styles.proteinButton}>
+          <Dumbbell size={17} />
+          Белок
         </button>
         <input
           ref={fileInputRef}

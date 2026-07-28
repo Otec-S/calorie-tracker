@@ -59,7 +59,10 @@ to `localStorage` via `src/storage/*.ts`. Entries are keyed per day
 (`calorie-tracker:entries:YYYY-MM-DD`, see `todayKey()` in `src/utils/date.ts`),
 so "today" is whatever `todayKey()` returns *at render time* — it's not
 re-evaluated on a timer, only when state changes (adding an entry) or on
-reload. `App.tsx` wires these two hooks together and owns the
+reload. The day boundary is 3am rather than midnight (`todayKey()` shifts
+the clock back 3h before reading the calendar date), so a meal logged at
+1am still counts toward the previous day. `App.tsx` wires these two hooks
+together and owns the
 photo/text-analysis flow (`status`: idle/analyzing/error).
 
 **Styling**: CSS Modules per component (`Component.module.css` next to

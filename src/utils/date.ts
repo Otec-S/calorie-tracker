@@ -1,5 +1,7 @@
 export function todayKey(): string {
-  return new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
+  // Day boundary is 3am, not midnight — shift back 3h before reading the calendar date.
+  const shifted = new Date(Date.now() - 3 * 60 * 60 * 1000);
+  return shifted.toLocaleDateString("en-CA"); // YYYY-MM-DD, local time
 }
 
 export function fmtDate(dateKey: string): string {
