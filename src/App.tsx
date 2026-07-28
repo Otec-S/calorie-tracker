@@ -16,6 +16,7 @@ import { useSummaries } from "./hooks/useSummaries.ts";
 import { analyzeWithClaude } from "./api/claude.ts";
 import { fileToResizedBase64 } from "./utils/image.ts";
 import { PROTEIN_SERVING } from "./data/proteinServing.ts";
+import { CAPPUCCINO_SERVING } from "./data/cappuccinoServing.ts";
 import type { Status } from "./types.ts";
 import styles from "./App.module.css";
 
@@ -50,6 +51,10 @@ export default function App() {
 
   function handleAddProtein() {
     commitEntry(PROTEIN_SERVING);
+  }
+
+  function handleAddCappuccino() {
+    commitEntry(CAPPUCCINO_SERVING);
   }
 
   async function handleTextSubmit(text: string) {
@@ -91,6 +96,7 @@ export default function App() {
           onPhotoSelected={handlePhotoSelected}
           onTextSubmit={handleTextSubmit}
           onAddProtein={handleAddProtein}
+          onAddCappuccino={handleAddCappuccino}
         />
 
         {pendingPreview && status === "analyzing" && <AnalyzingPreview previewSrc={pendingPreview} />}
