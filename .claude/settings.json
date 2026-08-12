@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(echo \"EXIT:$?\")"
+      "Bash(echo \"EXIT:$?\")",
+      "PowerShell(npm install -D vitest jsdom --silent 2>&1)",
+      "PowerShell(if \\($?\\) { \"FRONT OK\" })",
+      "PowerShell(npm --prefix server install -D vitest supertest \"@types/supertest\" --silent 2>&1)",
+      "PowerShell(if \\($?\\) { \"SERVER OK\" })",
+      "PowerShell(npm test 2>&1)"
     ]
   }
 }
