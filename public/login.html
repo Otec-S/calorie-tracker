@@ -81,7 +81,17 @@
       <h1>Дневник калорий</h1>
       <form id="login-form">
         <label for="username">Логин</label>
-        <input id="username" name="username" type="text" autocomplete="username" required autofocus />
+        <input
+          id="username"
+          name="username"
+          type="text"
+          autocomplete="username"
+          autocapitalize="off"
+          autocorrect="off"
+          spellcheck="false"
+          required
+          autofocus
+        />
 
         <label for="password">Пароль</label>
         <input id="password" name="password" type="password" autocomplete="current-password" required />
@@ -114,14 +124,20 @@
           if (res.ok) {
             const redirect = new URLSearchParams(location.search).get('redirect');
             const safe = redirect && redirect.startsWith('/') && !redirect.startsWith('//');
-            location.href = safe ? redirect : '/';
+            // iOS Safari has been observed navigating before it finishes
+            // persisting the Set-Cookie from this fetch response, which
+            // sends the very next request back out with no session cookie
+            // at all — a hair of delay avoids the race.
+            setTimeout(() => {
+              location.href = safe ? redirect : '/';
+            }, 150);
             return;
           }
 
           const data = await res.json().catch(() => null);
-          errorEl.textContent = data?.error || 'Не удалось войти';
-        } catch {
-          errorEl.textContent = 'Ошибка сети, попробуй ещё раз';
+          errorEl.textContent = data?.error || `Не удалось войти (${res.status})`;
+        } catch (err) {
+          errorEl.textContent = `Ошибка сети, попробуй ещё раз (${err instanceof Error ? err.message : String(err)})`;
         } finally {
           button.disabled = false;
         }
