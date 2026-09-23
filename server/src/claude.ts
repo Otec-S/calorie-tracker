@@ -215,6 +215,27 @@ export function formatDietContext(days: Record<string, DayEntry[]>, goal: number
   return `Данные о питании пользователя за последние дни:\n\n${dayBlocks.join("\n\n")}${goalLine}`;
 }
 
+const MAX_CHAT_TURNS = 20;
+const MAX_TURNS_WITH_ATTACHMENTS = 3;
+
+/**
+ * Caps what actually goes to the API: only the last MAX_CHAT_TURNS turns
+ * (older ones are dropped, not summarized), and attachments are stripped
+ * from every turn but the most recent MAX_TURNS_WITH_ATTACHMENTS, since
+ * re-sending old base64 images/PDFs on every call is the real cost driver,
+ * not the text.
+ */
+export function trimChatHistory(messages: ChatMessage[]): ChatMessage[] {
+  const recent = messages.slice(-MAX_CHAT_TURNS);
+  const attachmentCutoff = recent.length - MAX_TURNS_WITH_ATTACHMENTS;
+
+  return recent.map((m, i) => {
+    if (!m.attachments || i >= attachmentCutoff) return m;
+    const { attachments: _attachments, ...rest } = m;
+    return rest;
+  });
+}
+
 /**
  * Sends a multi-turn conversation to Claude with the user's recent food log
  * folded into the system prompt (rebuilt fresh on every call, since the log
@@ -234,7 +255,7 @@ export async function chatAboutDietWithClaude(
       model: "claude-sonnet-5",
       max_tokens: 1000,
       system,
-      messages: messages.map((m) => ({ role: m.role, content: toApiContent(m) })),
+      messages: trimChatHistory(messages).map((m) => ({ role: m.role, content: toApiContent(m) })),
     });
   } catch (err) {
     throw toFriendlyError(err);

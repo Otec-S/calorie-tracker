@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { describe, expect, it } from "vitest";
-import { formatDietContext, toApiContent, toFriendlyError, type DayEntry } from "./claude.js";
+import { formatDietContext, toApiContent, toFriendlyError, trimChatHistory, type DayEntry } from "./claude.js";
+import type { ChatMessage } from "./types.js";
 
 function entry(over: Partial<DayEntry> = {}): DayEntry {
   return {
@@ -132,6 +133,50 @@ describe("toApiContent", () => {
 
     expect(content).toHaveLength(1);
     expect(content[0].type).toBe("image");
+  });
+});
+
+describe("trimChatHistory", () => {
+  function turn(i: number, withAttachment = false): ChatMessage {
+    return {
+      role: i % 2 === 0 ? "user" : "assistant",
+      content: `turn ${i}`,
+      ...(withAttachment
+        ? { attachments: [{ mediaType: "image/jpeg", base64: `img${i}`, name: `${i}.jpg` }] }
+        : {}),
+    };
+  }
+
+  it("keeps everything when there are 20 or fewer turns", () => {
+    const messages = Array.from({ length: 20 }, (_, i) => turn(i));
+    expect(trimChatHistory(messages)).toEqual(messages);
+  });
+
+  it("keeps only the last 20 turns when there are more", () => {
+    const messages = Array.from({ length: 25 }, (_, i) => turn(i));
+    const trimmed = trimChatHistory(messages);
+    expect(trimmed).toHaveLength(20);
+    expect(trimmed[0].content).toBe("turn 5");
+    expect(trimmed[19].content).toBe("turn 24");
+  });
+
+  it("strips attachments from all but the last 3 turns", () => {
+    const messages = Array.from({ length: 10 }, (_, i) => turn(i, true));
+    const trimmed = trimChatHistory(messages);
+    expect(trimmed.slice(0, 7).every((m) => m.attachments === undefined)).toBe(true);
+    expect(trimmed.slice(7).every((m) => m.attachments?.length === 1)).toBe(true);
+  });
+
+  it("does not mutate the original messages", () => {
+    const messages = Array.from({ length: 5 }, (_, i) => turn(i, true));
+    const original = JSON.parse(JSON.stringify(messages));
+    trimChatHistory(messages);
+    expect(messages).toEqual(original);
+  });
+
+  it("leaves messages without attachments untouched", () => {
+    const messages = Array.from({ length: 5 }, (_, i) => turn(i));
+    expect(trimChatHistory(messages)).toEqual(messages);
   });
 });
 
