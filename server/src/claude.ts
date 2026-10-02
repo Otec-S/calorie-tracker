@@ -117,7 +117,8 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
       model: "claude-sonnet-5-5",
       max_tokens: 1000,
       system: SYSTEM_PROMPT,
-      output_config: { format: { type: "json_schema", schema: ANALYZE_SCHEMA } },
+      // Оценка калорий и сводка — несложные задачи: низкий effort сокращает задержку и расход токенов.
+      output_config: { format: { type: "json_schema", schema: ANALYZE_SCHEMA }, effort: "low" },
       messages: [{ role: "user", content }],
     });
   } catch (err) {
@@ -157,7 +158,7 @@ ${lines.join("\n")}
       model: "claude-sonnet-5-5",
       max_tokens: 1000,
       system: SUMMARY_SYSTEM_PROMPT,
-      output_config: { format: { type: "json_schema", schema: SUMMARY_SCHEMA } },
+      output_config: { format: { type: "json_schema", schema: SUMMARY_SCHEMA }, effort: "low" },
       messages: [{ role: "user", content: text }],
     });
   } catch (err) {
