@@ -1,6 +1,13 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { describe, expect, it } from "vitest";
-import { formatDietContext, toApiContent, toFriendlyError, trimChatHistory, type DayEntry } from "./claude.js";
+import {
+  formatDietContext,
+  parseStructuredResponse,
+  toApiContent,
+  toFriendlyError,
+  trimChatHistory,
+  type DayEntry,
+} from "./claude.js";
 import type { ChatMessage } from "./types.js";
 
 function entry(over: Partial<DayEntry> = {}): DayEntry {
@@ -224,5 +231,39 @@ describe("toFriendlyError", () => {
 
   it("wraps a non-Error throw", () => {
     expect(toFriendlyError("boom").message).toBe("boom");
+  });
+});
+
+describe("parseStructuredResponse", () => {
+  function message(over: Partial<Anthropic.Message>): Anthropic.Message {
+    return { stop_reason: "end_turn", content: [], ...over } as Anthropic.Message;
+  }
+  const text = (t: string) => ({ type: "text", text: t }) as Anthropic.TextBlock;
+
+  it("parses the JSON from the text block", () => {
+    const res = message({ content: [text('{"title":"Овсянка","cal_min":300}')] });
+    expect(parseStructuredResponse<{ title: string; cal_min: number }>(res)).toEqual({
+      title: "Овсянка",
+      cal_min: 300,
+    });
+  });
+
+  it("throws on an empty response", () => {
+    expect(() => parseStructuredResponse(message({ content: [] }))).toThrow("Пустой ответ от модели");
+  });
+
+  it("throws when the model refused", () => {
+    const res = message({ stop_reason: "refusal", content: [text("{}")] });
+    expect(() => parseStructuredResponse(res)).toThrow("Модель отказалась отвечать");
+  });
+
+  it("throws when the answer was cut off by max_tokens", () => {
+    const res = message({ stop_reason: "max_tokens", content: [text('{"title":"Ов')] });
+    expect(() => parseStructuredResponse(res)).toThrow("Ответ модели обрезан по max_tokens");
+  });
+
+  it("throws on malformed JSON", () => {
+    const res = message({ content: [text("не json")] });
+    expect(() => parseStructuredResponse(res)).toThrow("Модель вернула некорректный JSON");
   });
 });

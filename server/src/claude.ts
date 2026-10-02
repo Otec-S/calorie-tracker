@@ -3,56 +3,64 @@ import type { ChatMessage, DaySummary, FoodAnalysis } from "./types.js";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const SYSTEM_PROMPT = `Ты — нутрициолог-аналитик. По фото еды (или по текстовому описанию) оцени состав и калорийность и передай результат через инструмент submit_food_analysis.
+const SYSTEM_PROMPT = `Ты — нутрициолог-аналитик. По фото еды (или по текстовому описанию) оцени состав и калорийность и верни результат строго в заданном JSON-формате.
 Если на фото нет еды или её невозможно определить — передай title: "Не удалось распознать" и cal_min/cal_max: 0.
 Числа — целые, без единиц измерения.`;
 
-const ANALYZE_TOOL: Anthropic.Tool = {
-  name: "submit_food_analysis",
-  description: "Отправить результат анализа калорийности и БЖУ блюда.",
-  strict: true,
-  input_schema: {
-    type: "object",
-    properties: {
-      title: { type: "string", description: "короткое название блюда по-русски (3-6 слов)" },
-      items: { type: "string", description: "краткий список того, что видно на фото, через запятую, по-русски" },
-      portion: { type: "string", description: "оценка размера порции (например '~250 г' или '1 средняя тарелка')" },
-      cal_min: { type: "integer" },
-      cal_max: { type: "integer" },
-      protein_g: { type: "integer" },
-      fat_g: { type: "integer" },
-      carbs_g: { type: "integer" },
-      note: { type: "string", description: "одно короткое предложение по-русски о пользе/минусах блюда" },
-    },
-    required: ["title", "items", "portion", "cal_min", "cal_max", "protein_g", "fat_g", "carbs_g", "note"],
-    additionalProperties: false,
+/** JSON Schema ответа анализа блюда — передаётся в output_config.format (structured outputs). */
+const ANALYZE_SCHEMA: Record<string, unknown> = {
+  type: "object",
+  properties: {
+    title: { type: "string", description: "короткое название блюда по-русски (3-6 слов)" },
+    items: { type: "string", description: "краткий список того, что видно на фото, через запятую, по-русски" },
+    portion: { type: "string", description: "оценка размера порции (например '~250 г' или '1 средняя тарелка')" },
+    cal_min: { type: "integer" },
+    cal_max: { type: "integer" },
+    protein_g: { type: "integer" },
+    fat_g: { type: "integer" },
+    carbs_g: { type: "integer" },
+    note: { type: "string", description: "одно короткое предложение по-русски о пользе/минусах блюда" },
   },
+  required: ["title", "items", "portion", "cal_min", "cal_max", "protein_g", "fat_g", "carbs_g", "note"],
+  additionalProperties: false,
 };
 
 const SUMMARY_SYSTEM_PROMPT = `Ты — нутрициолог-аналитик. Тебе дают список всего, что человек съел за день, и его дневную цель по калориям.
-Оцени рацион в целом и передай результат через инструмент submit_day_summary: общий вердикт о полезности рациона, гармоничность БЖУ, попадание в цель по калориям и 2-3 конкретные рекомендации на будущее.
+Оцени рацион в целом и верни результат в заданном JSON-формате: общий вердикт о полезности рациона, гармоничность БЖУ, попадание в цель по калориям и 2-3 конкретные рекомендации на будущее.
 Пиши по-русски, коротко и по делу, без нравоучений.`;
 
-const SUMMARY_TOOL: Anthropic.Tool = {
-  name: "submit_day_summary",
-  description: "Отправить сводный разбор рациона за день.",
-  strict: true,
-  input_schema: {
-    type: "object",
-    properties: {
-      verdict: { type: "string", description: "общая оценка полезности рациона за день, 1-2 предложения" },
-      macro_balance: { type: "string", description: "оценка гармоничности БЖУ, 1-2 предложения" },
-      calorie_target: { type: "string", description: "попадание в дневную цель по калориям, 1 предложение" },
-      recommendations: {
-        type: "array",
-        items: { type: "string" },
-        description: "2-3 конкретные рекомендации по питанию на будущее",
-      },
+/** JSON Schema сводного разбора дня — передаётся в output_config.format (structured outputs). */
+const SUMMARY_SCHEMA: Record<string, unknown> = {
+  type: "object",
+  properties: {
+    verdict: { type: "string", description: "общая оценка полезности рациона за день, 1-2 предложения" },
+    macro_balance: { type: "string", description: "оценка гармоничности БЖУ, 1-2 предложения" },
+    calorie_target: { type: "string", description: "попадание в дневную цель по калориям, 1 предложение" },
+    recommendations: {
+      type: "array",
+      items: { type: "string" },
+      description: "2-3 конкретные рекомендации по питанию на будущее",
     },
-    required: ["verdict", "macro_balance", "calorie_target", "recommendations"],
-    additionalProperties: false,
   },
+  required: ["verdict", "macro_balance", "calorie_target", "recommendations"],
+  additionalProperties: false,
 };
+
+/**
+ * Достаёт JSON из ответа со structured output. Схему гарантирует API, поэтому
+ * здесь только страховка от отказа модели, обрезки по max_tokens и пустого ответа.
+ */
+export function parseStructuredResponse<T>(response: Anthropic.Message): T {
+  if (response.stop_reason === "refusal") throw new Error("Модель отказалась отвечать");
+  if (response.stop_reason === "max_tokens") throw new Error("Ответ модели обрезан по max_tokens");
+  const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === "text");
+  if (!textBlock) throw new Error("Пустой ответ от модели");
+  try {
+    return JSON.parse(textBlock.text) as T;
+  } catch {
+    throw new Error("Модель вернула некорректный JSON");
+  }
+}
 
 interface AnalyzeInput {
   base64?: string;
@@ -106,22 +114,17 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
   let response: Anthropic.Message;
   try {
     response = await anthropic.messages.create({
-      model: "claude-sonnet-5",
+      model: "claude-sonnet-5-5",
       max_tokens: 1000,
       system: SYSTEM_PROMPT,
-      tools: [ANALYZE_TOOL],
-      tool_choice: { type: "tool", name: "submit_food_analysis" },
+      output_config: { format: { type: "json_schema", schema: ANALYZE_SCHEMA } },
       messages: [{ role: "user", content }],
     });
   } catch (err) {
     throw toFriendlyError(err);
   }
 
-  const toolUse = response.content.find(
-    (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "submit_food_analysis",
-  );
-  if (!toolUse) throw new Error("Пустой ответ от модели");
-  return toolUse.input as FoodAnalysis;
+  return parseStructuredResponse<FoodAnalysis>(response);
 }
 
 /**
@@ -151,22 +154,17 @@ ${lines.join("\n")}
   let response: Anthropic.Message;
   try {
     response = await anthropic.messages.create({
-      model: "claude-sonnet-5",
+      model: "claude-sonnet-5-5",
       max_tokens: 1000,
       system: SUMMARY_SYSTEM_PROMPT,
-      tools: [SUMMARY_TOOL],
-      tool_choice: { type: "tool", name: "submit_day_summary" },
+      output_config: { format: { type: "json_schema", schema: SUMMARY_SCHEMA } },
       messages: [{ role: "user", content: text }],
     });
   } catch (err) {
     throw toFriendlyError(err);
   }
 
-  const toolUse = response.content.find(
-    (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "submit_day_summary",
-  );
-  if (!toolUse) throw new Error("Пустой ответ от модели");
-  return toolUse.input as DaySummary;
+  return parseStructuredResponse<DaySummary>(response);
 }
 
 const CHAT_SYSTEM_PROMPT = `Ты — нутрициолог-консультант. Пользователь ведёт дневник питания и задаёт тебе уточняющие вопросы по планированию рациона: что съесть дальше, укладывается ли он в цель по калориям, как сбалансировать БЖУ и т.п.
@@ -252,7 +250,7 @@ export async function chatAboutDietWithClaude(
   let response: Anthropic.Message;
   try {
     response = await anthropic.messages.create({
-      model: "claude-sonnet-5",
+      model: "claude-sonnet-5-5",
       max_tokens: 1000,
       system,
       messages: trimChatHistory(messages).map((m) => ({ role: m.role, content: toApiContent(m) })),
