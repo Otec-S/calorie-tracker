@@ -3,8 +3,9 @@
 | 0 | baseline (effort low) | 0.891 | 0.782 | 0.059 | 1.68 | 0.164 | 2.73 | 146 | $0.73 |
 | 1 | SYSTEM_PROMPT: sum components separately (reverted) | 0.862 | 0.691 (-9, significant) | 0.066 | 1.74 | 0.150 | 2.55 | 161 | $0.78 |
 | 2 | `items` field: each component with weight and kcal | **0.971** (+8.1) | **0.933** (+15.2) | **0.028** | **1.26** | 0.162 | 2.75 | 167 | $0.84 |
+| 3 | shorter `items` description (cost) | 0.954 (-1.7 vs v2, ns) | 0.903 | 0.035 | 1.28 | 0.157 | 2.75 | 166 | $0.78 |
 
-Fresh held-out set (15 cases x 3 reps, never seen by the loop): baseline 0.867 -> v2 1.000 kcal_ok, in_range 0.641 -> 0.923, kcal_err 0.074 -> 0.029, macro_err 4.17 -> 1.25, $/call 0.0042 -> 0.0048. Spend on evals: $3.12 of the $6 ceiling.
+Fresh held-out set (15 cases x 3 reps, never seen by the loop): baseline 0.867 -> v2 1.000 kcal_ok, in_range 0.641 -> 0.923, kcal_err 0.074 -> 0.029, macro_err 4.17 -> 1.25, $/call 0.0042 -> 0.0048. Spend on evals: $4.10 of the $6 ceiling.
 
 ## Recommended change
 [TUNE] In `server/src/claude.ts`, the `items` field description of `ANALYZE_SCHEMA` now asks for each component with weight and kcal ("авокадо 70 г — 112 ккал"). Nothing else changed in the app (field name/type, sentinel, SYSTEM_PROMPT, effort low untouched). It also makes the `items` text shown in the UI longer and costs about 15% more per call.
@@ -17,3 +18,6 @@ Mechanism: structured output emits fields in schema order, so `items` (before `c
 
 ## What else was tried
 effort medium vs low (28 cases, +2.4, CI -3.4..+8.1: no difference, tokens equal); round 1 prompt rule (reverted).
+
+## Round 3 (cost): shorter `items` description - adopted
+Goal: recover part of round 2's +15% per-call cost. The shorter description saves about 184 input tokens per call: cost/call $0.00485 -> $0.00447 (-7.8%), now +6.4% over baseline instead of +15%; output tokens and latency unchanged (166, 2.75 s). Quality held within noise: main set kcal_ok 0.971 -> 0.954 (paired -1.7, CI -5.5..+2.0), in_range -3.0 (CI -7.6..+1.5), driven by t05 (1.00 -> 0.00, 3 of 3 reps over 380 kcal vs reference 302, which is a case-specific shift worth a look). Fresh set (15 x 3): kcal_ok 1.000 -> 1.000, in_range 0.923 -> 0.974, kcal_err 0.029 -> 0.018, cost/call $0.00484 -> $0.00448. The code now carries the v3 wording.

@@ -12,7 +12,7 @@ const ANALYZE_SCHEMA: Record<string, unknown> = {
   type: "object",
   properties: {
     title: { type: "string", description: "короткое название блюда по-русски (3-6 слов)" },
-    items: { type: "string", description: "каждый компонент блюда через запятую с весом и калориями, например 'авокадо 70 г — 112 ккал'; вес — указанный или оценённый; по-русски" },
+    items: { type: "string", description: "компоненты с весом и ккал через запятую, напр. 'авокадо 70 г — 112 ккал'; по-русски" },
     portion: { type: "string", description: "оценка размера порции (например '~250 г' или '1 средняя тарелка')" },
     cal_min: { type: "integer" },
     cal_max: { type: "integer" },

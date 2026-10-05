@@ -57,8 +57,8 @@
   "harness_paths": [
     "../.claude/hillclimb/analyze-dish/cases.json"
   ],
-  "harness_sha": "5364c842374246ad9aa2becff5d1feb096ad73a9242c7db864170243d9d8f52a",
-  "current_round": 2,
+  "harness_sha": "5d22f056979c19c155b94008e3e9480983867ae77e0d8d38344ae4ba59e3a099",
+  "current_round": 3,
   "reps": 3,
   "approve_each_round": false,
   "goal": {
@@ -74,8 +74,9 @@
   },
   "split": "none (58 cases x 3 reps, directional); winner checked on ~15 fresh cases at the end",
   "best": {
-    "round": 2,
-    "score": 0.971
+    "round": 3,
+    "score": 0.954,
+    "note": "adopted for cost; kcal_ok within noise of v2 (0.971)"
   },
   "delta_to_stop": 0.05,
   "max_rounds": 6,
