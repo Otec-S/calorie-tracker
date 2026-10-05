@@ -1,0 +1,62 @@
+{
+  "metrics": [
+    {
+      "id": "kcal_ok",
+      "label": "kcal ok",
+      "kind": "binary"
+    },
+    {
+      "id": "in_range",
+      "label": "in range",
+      "kind": "binary"
+    },
+    {
+      "id": "kcal_err",
+      "label": "kcal err",
+      "kind": "float",
+      "scale": 1,
+      "better": "lower"
+    },
+    {
+      "id": "macro_err",
+      "label": "macro err g",
+      "kind": "float",
+      "scale": 50,
+      "better": "lower"
+    },
+    {
+      "id": "range_width",
+      "label": "range width",
+      "kind": "float",
+      "scale": 1,
+      "better": "lower"
+    }
+  ],
+  "perf_fields": [
+    {
+      "id": "latency_s",
+      "label": "latency",
+      "unit": "s"
+    },
+    {
+      "id": "cost_usd",
+      "label": "cost",
+      "unit": "$"
+    },
+    {
+      "id": "out_tokens",
+      "label": "out tokens"
+    }
+  ],
+  "prices": {
+    "claude-sonnet-5-5": {
+      "in": 2,
+      "out": 10
+    }
+  },
+  "harness_paths": [
+    "src/claude.ts",
+    "../.claude/hillclimb/analyze-dish/cases.json"
+  ],
+  "harness_sha": "bde2b1ff945b8c7cb06446ee49e4a521ecb8223bfbfbda0decfb9fc9f968c67c"
+}

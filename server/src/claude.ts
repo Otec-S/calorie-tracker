@@ -67,6 +67,13 @@ interface AnalyzeInput {
   text?: string;
 }
 
+/** Optional knobs for analyzeWithClaude; production callers pass none. Used by the eval runner. */
+export interface AnalyzeOptions {
+  effort?: "low" | "medium" | "high";
+  /** Called with the raw API response before parsing, so callers can read model/usage/stop_reason. */
+  onResponse?: (response: Anthropic.Message) => void;
+}
+
 /** One eaten dish as sent by the frontend: analysis fields plus the entry time. */
 export interface DayEntry extends FoodAnalysis {
   time?: string;
@@ -97,7 +104,11 @@ export function toFriendlyError(err: unknown): Error {
  * parsed calorie/macro analysis. Runs server-side only — this is why the
  * proxy exists: the Anthropic API key never reaches the browser.
  */
-export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise<FoodAnalysis> {
+export async function analyzeWithClaude(
+  { base64, text }: AnalyzeInput,
+  options: AnalyzeOptions = {},
+): Promise<FoodAnalysis> {
+  const { effort = "low", onResponse } = options;
   const content: Anthropic.ContentBlockParam[] = [];
   if (base64) {
     content.push({ type: "image", source: { type: "base64", media_type: "image/jpeg", data: base64 } });
@@ -118,13 +129,14 @@ export async function analyzeWithClaude({ base64, text }: AnalyzeInput): Promise
       max_tokens: 1000,
       system: SYSTEM_PROMPT,
       // Оценка калорий и сводка — несложные задачи: низкий effort сокращает задержку и расход токенов.
-      output_config: { format: { type: "json_schema", schema: ANALYZE_SCHEMA }, effort: "low" },
+      output_config: { format: { type: "json_schema", schema: ANALYZE_SCHEMA }, effort },
       messages: [{ role: "user", content }],
     });
   } catch (err) {
     throw toFriendlyError(err);
   }
 
+  onResponse?.(response);
   return parseStructuredResponse<FoodAnalysis>(response);
 }
 

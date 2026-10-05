@@ -24,3 +24,10 @@ dev-dist
 *.njsproj
 *.sln
 *.sw?
+
+# Eval outputs that can be regenerated
+.claude/hillclimb/**/traces/
+.claude/hillclimb/**/report.html
+.claude/hillclimb/**/trajectory/
+.claude/hillclimb/**/progress.txt
+.claude/hillclimb/**/baseline/ref/
