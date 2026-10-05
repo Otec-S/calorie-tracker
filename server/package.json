@@ -7,7 +7,7 @@
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
     "start": "node --env-file=.env dist/index.js",
-    "lint": "oxlint",
+    "lint": "oxlint --ignore-pattern eval/",
     "test": "vitest run",
     "test:watch": "vitest"
   },

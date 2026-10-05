@@ -1,0 +1,17 @@
+{
+  // Plain Node scripts (the eval runner and the vendored lite report builder),
+  // deliberately outside the strict TypeScript project in ../tsconfig.json.
+  // Without this file the editor type-checks them with checkJs and flags
+  // implicit-any in code that is not meant to be typed.
+  "compilerOptions": {
+    "checkJs": false,
+    "allowJs": true,
+    "noEmit": true,
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "target": "es2023",
+    "types": ["node"],
+    "allowImportingTsExtensions": true
+  },
+  "include": ["./*.mjs"]
+}
