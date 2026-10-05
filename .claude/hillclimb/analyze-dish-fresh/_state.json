@@ -55,29 +55,9 @@
     }
   },
   "harness_paths": [
-    "../.claude/hillclimb/analyze-dish/cases.json"
+    "../.claude/hillclimb/analyze-dish-fresh/cases.json"
   ],
-  "harness_sha": "5364c842374246ad9aa2becff5d1feb096ad73a9242c7db864170243d9d8f52a",
-  "current_round": 2,
   "reps": 3,
-  "approve_each_round": false,
-  "goal": {
-    "target": "kcal_ok",
-    "direction": "higher",
-    "hold": [
-      "in_range",
-      "macro_err",
-      "range_width",
-      "latency_s",
-      "cost_usd"
-    ]
-  },
-  "split": "none (58 cases x 3 reps, directional); winner checked on ~15 fresh cases at the end",
-  "best": {
-    "round": 2,
-    "score": 0.971
-  },
-  "delta_to_stop": 0.05,
-  "max_rounds": 6,
-  "spend_ceiling_usd": 6
+  "note": "Held-out fresh cases for the final baseline vs winner check; the analyzer never saw them.",
+  "harness_sha": "fd46661940cd94ed359f6bbaae020b1d2af3900d3259eb12cc25e075d5d07dd4"
 }

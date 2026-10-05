@@ -135,16 +135,19 @@ const REF_EXTS = ['', '.html', '.txt', '.json'];
 
 // --- analyze-dish eval ------------------------------------------------------
 // Runs the real analyzeWithClaude() from server/src/claude.ts on text-only cases.
-// Variant -> effort: baseline = "low" (current production), v1 = "medium".
+// effort is fixed at "low" (production setting); rounds vary the prompt, not effort.
 // Run from server/:  npx tsx --env-file=.env eval/run-eval.mjs --flow <abs path> --variant baseline
 
 import { analyzeWithClaude } from '../src/claude.ts';
 
 const UNRECOGNIZED = 'Не удалось распознать';
-const EFFORT_BY_VARIANT = { baseline: 'low', v1: 'medium' };
+const EFFORT = 'low';
 
 async function loadCases() {
-  const file = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '.claude', 'hillclimb', 'analyze-dish', 'cases.json');
+  // EVAL_CASES points the runner at another case file (the fresh held-out set); default is the main set.
+  const file = process.env.EVAL_CASES
+    ? resolve(process.env.EVAL_CASES)
+    : join(dirname(fileURLToPath(import.meta.url)), '..', '..', '.claude', 'hillclimb', 'analyze-dish', 'cases.json');
   return JSON.parse(readFileSync(file, 'utf8')).map(c => ({
     id: c.id, prompt: c.text, tags: c.tags, text: c.text, expected: c.expected,
     meta: { expected: c.expected },
@@ -152,8 +155,7 @@ async function loadCases() {
 }
 
 async function runCase(input, ctx) {
-  const effort = EFFORT_BY_VARIANT[ctx.variant];
-  if (!effort) throw new Error(`no effort configured for variant ${ctx.variant}`);
+  const effort = EFFORT;
   let response = null;
   let parsed = null;
   let parseError = null;
