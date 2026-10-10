@@ -266,12 +266,14 @@ export async function chatAboutDietWithClaude(
       model: "claude-sonnet-5-5",
       max_tokens: 1000,
       system,
+      output_config: { effort: "low" },
       messages: trimChatHistory(messages).map((m) => ({ role: m.role, content: toApiContent(m) })),
     });
   } catch (err) {
     throw toFriendlyError(err);
   }
 
+  if (response.stop_reason === "refusal") throw new Error("Модель отказалась отвечать");
   const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === "text");
   if (!textBlock) throw new Error("Пустой ответ от модели");
   return textBlock.text;
