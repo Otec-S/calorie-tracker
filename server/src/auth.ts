@@ -1,11 +1,37 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-const AUTH_USER = process.env.AUTH_USER;
-const AUTH_PASSWORD = process.env.AUTH_PASSWORD;
 const AUTH_COOKIE_SECRET = process.env.AUTH_COOKIE_SECRET;
 
-if (!AUTH_USER || !AUTH_PASSWORD || !AUTH_COOKIE_SECRET) {
-  throw new Error("AUTH_USER, AUTH_PASSWORD and AUTH_COOKIE_SECRET must be set — refusing to start");
+// Extra users: AUTH_USERS="alice:pass1,bob:pass2". Split on the first colon,
+// so a password may contain ':' but not ','. Combined with the legacy
+// AUTH_USER/AUTH_PASSWORD pair, which keeps working.
+export function parseUsers(
+  authUsers: string | undefined,
+  legacyUser: string | undefined,
+  legacyPassword: string | undefined,
+): Array<{ user: string; password: string }> {
+  const users: Array<{ user: string; password: string }> = [];
+  if (legacyUser && legacyPassword) users.push({ user: legacyUser, password: legacyPassword });
+  for (const entry of (authUsers ?? "").split(",")) {
+    const trimmed = entry.trim();
+    if (!trimmed) continue;
+    const idx = trimmed.indexOf(":");
+    const user = trimmed.slice(0, idx);
+    const password = trimmed.slice(idx + 1);
+    if (idx <= 0 || !password) {
+      throw new Error("AUTH_USERS entries must look like user:password — refusing to start");
+    }
+    users.push({ user, password });
+  }
+  return users;
+}
+
+const USERS = parseUsers(process.env.AUTH_USERS, process.env.AUTH_USER, process.env.AUTH_PASSWORD);
+
+if (USERS.length === 0 || !AUTH_COOKIE_SECRET) {
+  throw new Error(
+    "AUTH_COOKIE_SECRET and at least one user (AUTH_USER/AUTH_PASSWORD or AUTH_USERS) must be set — refusing to start",
+  );
 }
 
 export const SESSION_COOKIE_NAME = "ct_session";
@@ -22,7 +48,14 @@ function timingSafeEqualStr(a: string, b: string): boolean {
 }
 
 export function checkCredentials(user: string, password: string): boolean {
-  return timingSafeEqualStr(user, AUTH_USER!) && timingSafeEqualStr(password, AUTH_PASSWORD!);
+  // Check every user without early exit so timing doesn't reveal which logins exist.
+  let ok = false;
+  for (const u of USERS) {
+    const userOk = timingSafeEqualStr(user, u.user);
+    const passOk = timingSafeEqualStr(password, u.password);
+    if (userOk && passOk) ok = true;
+  }
+  return ok;
 }
 
 export function issueSessionCookie(): string {

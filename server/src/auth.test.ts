@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { SESSION_COOKIE_NAME, checkCredentials, issueSessionCookie, verifySessionCookie } from "./auth.js";
+import { SESSION_COOKIE_NAME, checkCredentials, issueSessionCookie, parseUsers, verifySessionCookie } from "./auth.js";
 
 // Mirrors sign() in auth.ts — lets the tests forge both valid and invalid
 // tokens without exporting the signing helper from production code.
@@ -31,6 +31,32 @@ describe("checkCredentials", () => {
 
   it("rejects empty credentials", () => {
     expect(checkCredentials("", "")).toBe(false);
+  });
+
+  it("accepts users from AUTH_USERS, including a password with colons", () => {
+    expect(checkCredentials("second", "pass:with:colons")).toBe(true);
+    expect(checkCredentials("third", "p3")).toBe(true);
+  });
+
+  it("does not mix one user's name with another's password", () => {
+    expect(checkCredentials("third", "hunter2")).toBe(false);
+    expect(checkCredentials("tester", "p3")).toBe(false);
+  });
+});
+
+describe("parseUsers", () => {
+  it("returns only the legacy pair when AUTH_USERS is unset", () => {
+    expect(parseUsers(undefined, "a", "b")).toEqual([{ user: "a", password: "b" }]);
+  });
+
+  it("works with AUTH_USERS alone", () => {
+    expect(parseUsers("x:1,y:2", undefined, undefined)).toHaveLength(2);
+  });
+
+  it("rejects malformed entries", () => {
+    expect(() => parseUsers("nocolon", undefined, undefined)).toThrow();
+    expect(() => parseUsers("user:", undefined, undefined)).toThrow();
+    expect(() => parseUsers(":pass", undefined, undefined)).toThrow();
   });
 });
 

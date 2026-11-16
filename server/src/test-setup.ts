@@ -4,4 +4,5 @@
 process.env.ANTHROPIC_API_KEY = "test-key";
 process.env.AUTH_USER = "tester";
 process.env.AUTH_PASSWORD = "hunter2";
+process.env.AUTH_USERS = "second:pass:with:colons, third:p3";
 process.env.AUTH_COOKIE_SECRET = "test-cookie-secret";
